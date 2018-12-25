@@ -5,8 +5,11 @@ import binascii
 class Packet:
 	def __init__(self):
 		self.data = bytearray()
-		self.id = 0
 		self.index = 0
+
+	def reset(self):
+		self.index = 0
+		self.data.clear()
 
 	def advance(self, amt):
 		self.index += amt
@@ -45,11 +48,11 @@ class Packet:
 		self.data[self.index:self.advance(2)] = d
 
 	def writeByte(self, i):
-		d = struct.pack(">c", i)
+		d = struct.pack(">b", ord(i))
 		self.data[self.index:self.advance(1)] = d
 
 	def readByte(self):
-		t = struct.unpack(">c", self.data[self.index:self.advance(1)])
+		t = struct.unpack(">b", self.data[self.index:self.advance(1)])
 		return t[0]
 
 	def readFloat(self):
@@ -70,23 +73,21 @@ class Packet:
 
 	def writeString(self, str):
 		length = len(str)
-		self.writeUInt16(length)
+		self.writeInt16(length)
 		if length == 0:
 			return
 		else:
 			for i in str:
-				self.writeByte(i.encode('utf-8'))
+				self.writeByte(i)
 
 	def readString(self):
-		length = self.readUInt16()
-		# print(length)
+		length = self.readInt16()
 		if length == 0:
 			return ""
 		else:
 			d = ""
-			for x in range(length):
-				b = self.readByte().decode('utf-8')
-				d += b	#convert the byte from byte type to int/String type
+			for _ in range(length):
+				d += chr(self.readByte())	#convert the byte from byte type to int/String type
 			return d
 	
 	def writeUTFString(self, str):
@@ -96,27 +97,26 @@ class Packet:
 			return
 		else:
 			for i in str:
-				self.writeByte(i.encode('ascii'))
+				self.writeByte(i.encode('utf8'))
 
 	def readUTFString(self):
 		length = self.readInt32()
-		self.writeInt16(length)
 		if length == 0:
-			return
+			return ''
 		else:
 			d = ""
-			for x in range(length):
-				d += self.readByte().decode('ascii')
+			for _ in range(length):
+				d += chr(self.readByte())
 			return d
-	
+
 	def writeBytearray(self, bytes):
-		length = len(bytes)
-		self.writeInt32(length)
-		if length == 0:
-			return
-		else:
-			for i in bytes:
-				self.writeByte(i)
+			length = len(bytes)
+			self.writeInt16(length)
+			if length == 0:
+				return
+			else:
+				for i in bytes:
+					self.writeByte(i)
 	
 	def readBytearray(self):
 		length = self.readInt16()
@@ -124,9 +124,9 @@ class Packet:
 			return []
 		else:
 			d = []
-			for x in range(length):
+			for _ in range(length):
 				d.append(self.readByte())	#convert the byte from byte type to int/String type
-			return [binascii.unhexlify(b) for b in d]
+			return d
 
 	def writeBooleanarray(self, bytes):
 		length = len(bytes)
@@ -143,6 +143,6 @@ class Packet:
 			return []
 		else:
 			d = []
-			for x in range(length):
+			for _ in range(length):
 				d.append(self.readBoolean())
 			return d
