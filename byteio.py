@@ -73,7 +73,7 @@ class Packet:
 
 	def writeString(self, str):
 		length = len(str)
-		self.writeInt16(length)
+		self.writeUInt16(length)
 		if length == 0:
 			return
 		else:
@@ -81,7 +81,7 @@ class Packet:
 				self.writeByte(i)
 
 	def readString(self):
-		length = self.readInt16()
+		length = self.readUInt16()
 		if length == 0:
 			return ""
 		else:
