@@ -18,7 +18,23 @@ class Packet:
 	def readInt32(self):
 		t = struct.unpack(">i", self.data[self.index:self.advance(4)])
 		return t[0]
-			
+	
+	def writeInt64(self, i):
+		d = struct.pack(">q", i)
+		self.data[self.index:self.advance(8)] = d
+
+	def readInt64(self):
+		t = struct.unpack(">q", self.data[self.index:self.advance(8)])
+		return t[0]
+
+	def writeUInt64(self, i):
+		d = struct.pack(">Q", i)
+		self.data[self.index:self.advance(8)] = d	
+
+	def readUInt64(self):
+		t = struct.unpack(">Q", self.data[self.index:self.advance(8)])
+		return t[0]
+
 	def writeInt32(self, i):
 		d = struct.pack(">i", i)
 		self.data[self.index:self.advance(4)] = d
