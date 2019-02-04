@@ -41,7 +41,6 @@ def Route():
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     listener.bind(('127.0.0.1', 2050))
     listener.listen(1)
-
     client, caddr = listener.accept()
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
