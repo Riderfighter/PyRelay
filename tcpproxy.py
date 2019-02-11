@@ -54,7 +54,8 @@ def Route():
             if client in rlist:
                 sendSocket(server, client, True)
             if server in rlist and running:
-                sendSocket(client, server, False)
+                server.send(client.recv(10000))
+                # sendSocket(client, server, False)
         except KeyboardInterrupt:
             client.close()
             server.close()
