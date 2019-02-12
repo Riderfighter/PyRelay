@@ -64,11 +64,11 @@ class Packet:
 		self.data[self.index:self.advance(2)] = d
 
 	def writeByte(self, i):
-		d = struct.pack(">b", ord(i))
+		d = struct.pack(">B", ord(i))
 		self.data[self.index:self.advance(1)] = d
 
 	def readByte(self):
-		t = struct.unpack(">b", self.data[self.index:self.advance(1)])
+		t = struct.unpack(">B", self.data[self.index:self.advance(1)])
 		return t[0]
 
 	def readFloat(self):

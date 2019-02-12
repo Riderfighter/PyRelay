@@ -737,6 +737,22 @@ class ViewQuestsPacket:
 
 
 #Server packets?
+class TextPacket:
+	def __init__(self):
+		self.packet = byteio.Packet()
+
+	def write(self, name, objectid, numstars, bubbletime, recipient, text, cleantext):
+		self.packet.writeString(name)
+		self.packet.writeInt32(objectid)
+		self.packet.writeInt32(numstars)
+		self.packet.writeByte(bubbletime)
+		self.packet.writeString(recipient)
+		self.packet.writeString(text)
+		self.packet.writeString(cleantext)
+	
+	def read(self):
+		return (self.packet.readString(), self.packet.readInt32(), self.packet.readInt32(), self.packet.readByte(), self.packet.readString(), self.packet.readString(), self.packet.readString())
+
 class AccountListPacket:
 	def __init__(self):
 		self.packet = byteio.Packet()
