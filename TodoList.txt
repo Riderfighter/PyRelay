@@ -60,14 +60,14 @@ CreateSuccessPacket !
 DamagePacket ?
 DeathPacket !
 EnemyShootPacket ?
-FailurePacket
-FilePacket
-GlobalNotificationPacket
-GotoPacket
-HatchEggPacket
-InvResultPacket
-InvitedToGuildPacket
-KeyInfoResponsePacket
+FailurePacket !
+FilePacket !
+GlobalNotificationPacket !
+GotoPacket !
+HatchEggPacket !
+InvResultPacket ! 
+InvitedToGuildPacket !
+KeyInfoResponsePacket !
 MapInfoPacket
 NameResultPacket
 NewAbilityUnlockedPacket

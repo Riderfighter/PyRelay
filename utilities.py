@@ -1,7 +1,7 @@
 import struct
 import binascii
-import byteio
-import packets
+import Packet
+import Packets
 import xml.etree.ElementTree as ET
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import ARC4
@@ -9,7 +9,10 @@ from Crypto.Cipher import PKCS1_OAEP
 import os
 import base64
 
-class utils:
+class CryptoUtils:
+    """
+    Takes the client -> server key and the server -> client key in the constructer.
+    """
     def __init__(self, outgoing, incoming):
         self.email = bytearray()
         self.password = bytearray()
@@ -29,26 +32,30 @@ class utils:
         cipher = PKCS1_OAEP.new(key)
         return cipher.decrypt(base64.b64decode(bytes(data,'utf8')))
 
-    def ARC4Decryptin(self, data):
+    def serverOut(self, data):
+        """Decrypt server Packets"""
         return self.ARC4DecryptinCipher.decrypt(data)
     
-    def ARC4Encryptin(self, data):
+    def serverIn(self, data):
+        """Encrypt server Packets"""
         return self.ARC4EncryptinCipher.encrypt(data)
     
-    def ARC4Decryptout(self, data):
+    def clientOut(self, data):
+        """Decrypt client Packets"""
         return self.ARC4DecryptoutCipher.decrypt(data)
     
-    def ARC4Encryptout(self, data):
+    def clientIn(self, data):
+        """Encrypt client Packets"""
         return self.ARC4EncryptoutCipher.encrypt(data)
 
-class packetsetup:
+class Packetsetup:
     def __init__(self):
         tree = ET.parse(f'{os.path.dirname(os.path.realpath(__file__))}/xmls/Packets.xml')
         self.root = tree.getroot()
         self.output = {}
     
     def setupPacket(self):
-        constantpacketpointers = {'FAILURE': packets.FailurePacket(), 'CREATESUCCESS': packets.CreateSuccessPacket(), 'CREATE': packets.CreatePacket(), 'PLAYERSHOOT': packets.PlayerShootPacket(), 'MOVE': packets.MovePacket(), 'PLAYERTEXT': packets.PlayerTextPacket(), 'TEXT': packets.TextPacket(), 'SERVERPLAYERSHOOT': None, 'DAMAGE': None, 'UPDATE': None, 'UPDATEACK': packets.UpdateAckPacket(), 'NOTIFICATION': None, 'NEWTICK': packets.NewTickPacket(), 'INVSWAP': packets.InvSwapPacket(), 'USEITEM': packets.UseItemPacket(), 'SHOWEFFECT': None, 'HELLO': packets.HelloPacket(), 'GOTO': None, 'INVDROP': packets.InvDropPacket(), 'INVRESULT': None, 'RECONNECT': None, 'PING': None, 'PONG': packets.PongPacket(), 'MAPINFO': None, 'LOAD': packets.LoadPacket(), 'PIC': None, 'SETCONDITION': packets.SetConditionPacket(), 'TELEPORT': packets.TeleportPacket(), 'USEPORTAL': packets.UsePortal(), 'DEATH': None, 'BUY': packets.BuyPacket(), 'BUYRESULT': None, 'AOE': None, 'GROUNDDAMAGE': packets.GroundDamagePacket(), 'PLAYERHIT': packets.PlayerHitPacket(), 'ENEMYHIT': packets.EnemyHitPacket(), 'AOEACK': packets.AoEAckPacket(), 'SHOOTACK': packets.ShootAckPacket(), 'OTHERHIT': packets.OtherHitPacket(), 'SQUAREHIT': packets.SquareHitPacket(), 'GOTOACK': packets.GotoAckPacket(), 'EDITACCOUNTLIST': packets.EditAccountListPacket(), 'ACCOUNTLIST': None, 'QUESTOBJID': None, 'CHOOSENAME': packets.ChooseNamePacket(), 'NAMERESULT': None, 'CREATEGUILD': packets.CreateGuildPacket(), 'GUILDRESULT': None, 'GUILDREMOVE': packets.GuildRemovePacket(), 'GUILDINVITE': packets.GuildInvitePacket(), 'ALLYSHOOT': None, 'ENEMYSHOOT': None, 'REQUESTTRADE': packets.RequestTradePacket(), 'TRADEREQUESTED': None, 'TRADESTART': None, 'CHANGETRADE': packets.ChangeTradePacket(), 'TRADECHANGED': None, 'ACCEPTTRADE': packets.AcceptTradePacket(), 'CANCELTRADE': packets.CancelTradePacket(), 'TRADEDONE': None, 'TRADEACCEPTED': None, 'CLIENTSTAT': None, 'CHECKCREDITS': packets.CheckCreditsPacket(), 'ESCAPE': packets.EscapePacket(), 'FILE': None, 'INVITEDTOGUILD': None, 'JOINGUILD': packets.JoinGuildPacket(), 'CHANGEGUILDRANK': packets.ChangeGuildRankPacket(), 'PLAYSOUND': None, 'GLOBALNOTIFICATION': None, 'RESKIN': packets.ReskinPacket(), 'PETUPGRADEREQUEST': None, 'ACTIVEPETUPDATEREQUEST': None, 'ACTIVEPETUPDATE': None, 'NEWABILITY': None, 'PETYARDUPDATE': None, 'EVOLVEPET': None, 'DELETEPET': None, 'HATCHPET': None, 'ENTERARENA': packets.EnterArenaPacket(), 'IMMINENTARENAWAVE': None, 'ARENADEATH': None, 'ACCEPTARENADEATH': None, 'VERIFYEMAIL': None, 'RESKINUNLOCK': None, 'PASSWORDPROMPT': None, 'QUESTFETCHASK': None, 'QUESTREDEEM': None, 'QUESTFETCHRESPONSE': None, 'QUESTREDEEMRESPONSE': None, 'PETCHANGEFORMMSG': None, 'KEYINFOREQUEST': packets.KeyInfoRequestPacket(), 'KEYINFORESPONSE': None, 'CLAIMLOGINREWARDMSG': None, 'LOGINREWARDMSG': None, 'QUESTROOMMSG': None}
+        constantpacketpointers = {'FAILURE': Packets.FailurePacket, 'CREATESUCCESS': Packets.CreateSuccessPacket, 'CREATE': Packets.CreatePacket, 'PLAYERSHOOT': Packets.PlayerShootPacket, 'MOVE': Packets.MovePacket, 'PLAYERTEXT': Packets.PlayerTextPacket, 'TEXT': Packets.TextPacket, 'SERVERPLAYERSHOOT': None, 'DAMAGE': None, 'UPDATE': None, 'UPDATEACK': Packets.UpdateAckPacket, 'NOTIFICATION': Packets.NotificationPacket, 'NEWTICK': Packets.NewTickPacket, 'INVSWAP': Packets.InvSwapPacket, 'USEITEM': Packets.UseItemPacket, 'SHOWEFFECT': None, 'HELLO': Packets.HelloPacket, 'GOTO': None, 'INVDROP': Packets.InvDropPacket, 'INVRESULT': None, 'RECONNECT': None, 'PING': None, 'PONG': Packets.PongPacket, 'MAPINFO': None, 'LOAD': Packets.LoadPacket, 'PIC': None, 'SETCONDITION': Packets.SetConditionPacket, 'TELEPORT': Packets.TeleportPacket, 'USEPORTAL': Packets.UsePortal, 'DEATH': None, 'BUY': Packets.BuyPacket, 'BUYRESULT': None, 'AOE': None, 'GROUNDDAMAGE': Packets.GroundDamagePacket, 'PLAYERHIT': Packets.PlayerHitPacket, 'ENEMYHIT': Packets.EnemyHitPacket, 'AOEACK': Packets.AoEAckPacket, 'SHOOTACK': Packets.ShootAckPacket, 'OTHERHIT': Packets.OtherHitPacket, 'SQUAREHIT': Packets.SquareHitPacket, 'GOTOACK': Packets.GotoAckPacket, 'EDITACCOUNTLIST': Packets.EditAccountListPacket, 'ACCOUNTLIST': None, 'QUESTOBJID': None, 'CHOOSENAME': Packets.ChooseNamePacket, 'NAMERESULT': None, 'CREATEGUILD': Packets.CreateGuildPacket, 'GUILDRESULT': None, 'GUILDREMOVE': Packets.GuildRemovePacket, 'GUILDINVITE': Packets.GuildInvitePacket, 'ALLYSHOOT': None, 'ENEMYSHOOT': None, 'REQUESTTRADE': Packets.RequestTradePacket, 'TRADEREQUESTED': None, 'TRADESTART': None, 'CHANGETRADE': Packets.ChangeTradePacket, 'TRADECHANGED': None, 'ACCEPTTRADE': Packets.AcceptTradePacket, 'CANCELTRADE': Packets.CancelTradePacket, 'TRADEDONE': None, 'TRADEACCEPTED': None, 'CLIENTSTAT': None, 'CHECKCREDITS': Packets.CheckCreditsPacket, 'ESCAPE': Packets.EscapePacket, 'FILE': None, 'INVITEDTOGUILD': None, 'JOINGUILD': Packets.JoinGuildPacket, 'CHANGEGUILDRANK': Packets.ChangeGuildRankPacket, 'PLAYSOUND': None, 'GLOBALNOTIFICATION': None, 'RESKIN': Packets.ReskinPacket, 'PETUPGRADEREQUEST': None, 'ACTIVEPETUPDATEREQUEST': None, 'ACTIVEPETUPDATE': None, 'NEWABILITY': None, 'PETYARDUPDATE': None, 'EVOLVEPET': None, 'DELETEPET': None, 'HATCHPET': None, 'ENTERARENA': Packets.EnterArenaPacket, 'IMMINENTARENAWAVE': None, 'ARENADEATH': None, 'ACCEPTARENADEATH': None, 'VERIFYEMAIL': None, 'RESKINUNLOCK': None, 'PASSWORDPROMPT': None, 'QUESTFETCHASK': None, 'QUESTREDEEM': None, 'QUESTFETCHRESPONSE': None, 'QUESTREDEEMRESPONSE': None, 'PETCHANGEFORMMSG': None, 'KEYINFOREQUEST': Packets.KeyInfoRequestPacket, 'KEYINFORESPONSE': None, 'CLAIMLOGINREWARDMSG': None, 'LOGINREWARDMSG': None, 'QUESTROOMMSG': None}
         thing1 = {}
         output = {}
         for child in self.root:

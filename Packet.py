@@ -2,14 +2,10 @@ import struct
 import binascii
 
 
-class Packet:
+class Packet(object):
 	def __init__(self):
 		self.data = bytearray()
 		self.index = 0
-
-	def reset(self):
-		self.index = 0
-		self.data.clear()
 
 	def advance(self, amt):
 		self.index += amt
@@ -64,11 +60,11 @@ class Packet:
 		self.data[self.index:self.advance(2)] = d
 
 	def writeByte(self, i):
-		d = struct.pack(">B", ord(i))
+		d = struct.pack(">b", ord(i))
 		self.data[self.index:self.advance(1)] = d
 
 	def readByte(self):
-		t = struct.unpack(">B", self.data[self.index:self.advance(1)])
+		t = struct.unpack(">b", self.data[self.index:self.advance(1)])
 		return t[0]
 
 	def readFloat(self):
@@ -87,14 +83,14 @@ class Packet:
 		d = struct.pack(">?", bool)
 		self.data[self.index:self.advance(1)] = d
 
-	def writeString(self, str):
-		length = len(str)
+	def writeString(self, string):
+		length = len(string)
 		self.writeUInt16(length)
 		if length == 0:
 			return
 		else:
-			for i in str:
-				self.writeByte(i)
+			for i in string:
+				self.writeByte(str(i))
 
 	def readString(self):
 		length = self.readUInt16()
@@ -104,25 +100,6 @@ class Packet:
 			d = ""
 			for _ in range(length):
 				d += chr(self.readByte())	#convert the byte from byte type to int/String type
-			return d
-	
-	def writeUTFString(self, str):
-		length = len(str)
-		self.writeInt32(length)
-		if length == 0:
-			return
-		else:
-			for i in str:
-				self.writeByte(i.encode('utf8'))
-
-	def readUTFString(self):
-		length = self.readInt32()
-		if length == 0:
-			return ''
-		else:
-			d = ""
-			for _ in range(length):
-				d += chr(self.readByte())
 			return d
 
 	def writeBytearray(self, bytes):
