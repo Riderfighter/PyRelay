@@ -1,0 +1,98 @@
+TODO:
+
+Client:
+AcceptTradePacket !
+AoEAckPacket !
+BuyPacket ! 
+CancelTradePacket !
+ChangeGuildRankPacket !
+ChangeTradePacket !
+CheckCreditsPacket !
+ChooseNamePacket !
+CreateGuildPacket !
+CreatePacket !
+EditAccountListPacket !
+EnemyHitPacket !
+EnterArenaPacket !
+EscapePacket !
+GotoAckPacket !
+GroundDamagePacket !
+GuildInvitePacket !
+GuildRemovePacket !
+HelloPacket !
+InvDropPacket !
+InvSwapPacket !
+JoinGuildPacket !
+KeyInfoRequestPacket !
+LeaveArenaPacket !
+LoadPacket !
+MovePacket ! 
+OtherHitPacket !
+PetCommandPacket !
+PetYardCommandPacket !
+PlayerHitPacket !
+PlayerShootPacket !
+PlayerTextPacket !
+PongPacket !
+RequestTradePacket !
+ReskinPacket !
+ReskinPetPacket !
+SetConditionPacket !
+ShootAckPacket !
+SquareHitPacket !
+TeleportPacket !
+TinkerQuestPacket !
+UpdateAckPacket !
+UseItemPacket !
+UsePortalPacket !
+ViewQuestsPacket !
+
+Server:
+AccountListPacket !
+AllyShootPacket !
+AoEPacket !
+ArenaDeathPacket !
+ArenaNextWavePacket !
+BuyResultPacket !
+ClientStatPacket !
+CreateGuildResultPacket !
+CreateSuccessPacket !
+DamagePacket ?
+DeathPacket !
+EnemyShootPacket ?
+FailurePacket !
+FilePacket !
+GlobalNotificationPacket !
+GotoPacket !
+HatchEggPacket !
+InvResultPacket ! 
+InvitedToGuildPacket !
+KeyInfoResponsePacket !
+MapInfoPacket
+NameResultPacket
+NewAbilityUnlockedPacket
+NewTickPacket
+NotificationPacket
+PasswordPromptPacket
+PetEvolveResultPacket
+PicPacket
+PingPacket
+PlaySoundPacket
+QuestFetchResponsePacket
+QuestObjIdPacket
+QuestRedeemResponsePacket
+ReconnectPacket
+RemovePetFromListPacket
+ReskinUnlock
+ServerPlayerShootPacket
+ShowEffectPacket
+TextPacket
+TradeAcceptedPacket
+TradeChangedPacket
+TradeDonePacket
+TradeRequestedPacket
+TradeStartPacket
+UpdatePacket
+UpdatePetPacket
+UpdatePetYardResultPacket
+VerifyEmailDialogPacket
