@@ -1,5 +1,5 @@
 import socket
-import Utilities
+import utilities
 import struct
 import Packet
 import select
