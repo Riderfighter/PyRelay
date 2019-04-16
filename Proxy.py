@@ -5,7 +5,7 @@ import socket
 import struct
 import threading
 import Packet
-import utilities
+import Utilities
 
 
 # 6a39570cc9de4ec71d64821894 c79332b197f92ba85ed281a023
@@ -18,8 +18,8 @@ class Proxy(object):
         self.defaultPort = 2050
         self.lastServer = ""
         self.lastPort = 2050
-        self.packetPointers = utilities.Packetsetup().setupPacket()
-        self.crypto = utilities.CryptoUtils(b'6a39570cc9de4ec71d64821894', b'c79332b197f92ba85ed281a023')
+        self.packetPointers = Utilities.Packetsetup().setupPacket()
+        self.crypto = Utilities.CryptoUtils(b'6a39570cc9de4ec71d64821894', b'c79332b197f92ba85ed281a023')
 
         # commonly mutated variables/classes
         # Dont access _packetHooks/_commandHooks directly, they are considered private variables.

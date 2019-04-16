@@ -1093,3 +1093,37 @@ class KeyInfoResponsePacket(Packet.Packet):
 	def read(self):
 		self.response = self.readBytearray()
 		return self.response
+
+
+class ReconnectPacket(Packet.Packet):
+	def __init__(self):
+		super(ReconnectPacket, self).__init__()
+		self.name = ''
+		self.host = ''
+		self.stats = ''
+		self.port = 0
+		self.gameid = 0
+		self.keytime = 0
+		self.isfromarena = None
+		self.key = []
+
+	def write(self, name, host, stats, port, gameid, keytime, isfromarena, key):
+		self.writeString(name)
+		self.writeString(host)
+		self.writeString(stats)
+		self.writeInt32(port)
+		self.writeInt32(gameid)
+		self.writeInt32(keytime)
+		self.writeBoolean(isfromarena)
+		self.writeBytearray(key)
+
+	def read(self):
+		self.name = self.readString()
+		self.host = self.readString()
+		self.stats = self.readString()
+		self.port = self.readInt32()
+		self.gameid = self.readInt32()
+		self.keytime = self.readInt32()
+		self.isfromarena = self.readBoolean()
+		self.key = self.readBytearray()
+		return self.name, self.host, self.stats, self.port, self.gameid, self.keytime, self.isfromarena, self.key
