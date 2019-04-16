@@ -1,15 +1,15 @@
-import socket
-import utilities
-import struct
-import Packet
-import select
-import os
 import importlib
+import os
+import select
+import socket
+import struct
 import threading
+import Packet
+import utilities
+
 
 # 6a39570cc9de4ec71d64821894 c79332b197f92ba85ed281a023
 # client to proxy only
-
 
 class Proxy(object):
     def __init__(self):
@@ -18,8 +18,8 @@ class Proxy(object):
         self.defaultPort = 2050
         self.lastServer = ""
         self.lastPort = 2050
-        self.packetPointers = Utilities.Packetsetup().setupPacket()
-        self.crypto = Utilities.CryptoUtils(b'6a39570cc9de4ec71d64821894', b'c79332b197f92ba85ed281a023')
+        self.packetPointers = utilities.Packetsetup().setupPacket()
+        self.crypto = utilities.CryptoUtils(b'6a39570cc9de4ec71d64821894', b'c79332b197f92ba85ed281a023')
 
         # commonly mutated variables/classes
         # Dont access _packetHooks/_commandHooks directly, they are considered private variables.
@@ -27,7 +27,7 @@ class Proxy(object):
         # self._commandHooks = {}
         self.running = True
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server = None
         self.client = None
 
     def loadPlugins(self):
@@ -37,14 +37,24 @@ class Proxy(object):
             module = importlib.import_module(f"plugins.{i}.{i}")
             getattr(module, i)(self)
 
-    def policySender(self):
+    def enableSWFPROXY(self):
         Adobepolicy = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         Adobepolicy.bind(('127.0.0.1', 843))
-        Adobepolicy.listen(5)
+        Adobepolicy.listen(1)
         while True:
             policy, addr = Adobepolicy.accept()
-            policy.sendall(b'<?xml version="1.0"?><!DOCTYPE cross-domain-policy SYSTEM "/xml/dtds/cross-domain-policy.dtd">  <cross-domain-policy>  <site-control permitted-cross-domain-policies="master-only"/>  <allow-access-from domain="*" to-ports="*" /></cross-domain-policy>')
+            print("sending xml")
+            policy.sendall(
+                b'<?xml version="1.0"?><!DOCTYPE cross-domain-policy SYSTEM "/xml/dtds/cross-domain-policy.dtd">  <cross-domain-policy>  <site-control permitted-cross-domain-policies="master-only"/>  <allow-access-from domain="*" to-ports="*" /></cross-domain-policy>')
             policy.close()
+
+    def enableClients(self):
+        self.listener.bind(('127.0.0.1', 2050))
+        self.listener.listen(5)
+        while True:
+            if not self.client:
+                self.client, _ = self.listener.accept()
+                print("new connection")
 
     def hookPacket(self, Packet: Packet.Packet, callback):
         """
@@ -66,10 +76,10 @@ class Proxy(object):
         if packetId == "":
             return
         if forClient:
-            header = struct.pack(">ib", len(data)+5, packetId) + self.crypto.serverIn(data)
+            header = struct.pack(">ib", len(data) + 5, packetId) + self.crypto.serverIn(data)
             self.client.send(header)
         else:
-            header = struct.pack(">ib", len(data)+5, packetId) + self.crypto.clientIn(data)
+            header = struct.pack(">ib", len(data) + 5, packetId) + self.crypto.clientIn(data)
             self.server.send(header)
 
     def sendToClient(self, packet):
@@ -87,7 +97,7 @@ class Proxy(object):
         #         for command in self._commandHooks:
         #             if command == commandText:
         #                 self._commandHooks[command]()
-        
+
         # Should call a hooked function
         for packetName in self._packetHooks:
             if packetName == packet.__class__.__name__:
@@ -105,72 +115,77 @@ class Proxy(object):
         sends data from socket2 to socket 1
         """
         header = socket2.recv(5)  # Receives data from socket2
+        if header == b'\xff':
+            print("got kill byte")
+            self.listener.close()
+            self.server.close()
+            self.client.close()
+            return
         while len(header) != 5:
-            header += socket2.recv(5-len(header))
-        if len(header) > 0:
-            if header == b'\xff':
-                self.listener.close()
-                self.server.close()
-                self.client.close()
-                return
-            packetid = header[4]
-            datalength = struct.unpack(">i", header[:4])[0] - 5  # minus 5 to remove the length of the header per packet
-            if datalength > 0:
-                # This is to make sure we receive all parts of the data we want to decode/send to the server.
-                while len(header[5:]) != datalength:
-                    header += socket2.recv(datalength-len(header[5:]))
-                if fromClient:
-                    dedata = self.crypto.clientOut(header[5:])
-                    if self.packetPointers.get(packetid):
-                        Packet = self.packetPointers.get(packetid)()
-                        Packet.data.extend(dedata)
-                        self.processClientPacket(Packet)
-                        if not Packet.send:
-                            return
-                    header = header[:5]+self.crypto.clientIn(dedata)
-                else:
-                    dedata = self.crypto.serverOut(header[5:])
-                    if self.packetPointers.get(packetid):
-                        Packet = self.packetPointers.get(packetid)()
-                        Packet.data.extend(dedata)
-                        self.processServerPacket(Packet)
-                        if not Packet.send:
-                            return
-                    header = header[:5]+self.crypto.serverIn(dedata)
-            socket.send(header)  # Sends data from sockt2 to socket1
+            header += socket2.recv(5 - len(header))
+        packetid = header[4]
+        datalength = struct.unpack(">i", header[:4])[0] - 5  # minus 5 to remove the length of the header per packet
+        # This is to make sure we receive all parts of the data we want to decode/send to the server.
+        while len(header[5:]) != datalength:
+            header += socket2.recv(datalength - len(header[5:]))
+        if fromClient:
+            dedata = self.crypto.clientOut(header[5:])
+            if self.packetPointers.get(packetid):
+                Packet = self.packetPointers.get(packetid)()
+                Packet.data.extend(dedata)
+                self.processClientPacket(Packet)
+                if not Packet.send:
+                    return
+            header = header[:5] + self.crypto.clientIn(dedata)
+        else:
+            dedata = self.crypto.serverOut(header[5:])
+            if self.packetPointers.get(packetid):
+                Packet = self.packetPointers.get(packetid)()
+                Packet.data.extend(dedata)
+                self.processServerPacket(Packet)
+                if not Packet.send:
+                    return
+            header = header[:5] + self.crypto.serverIn(dedata)
+        socket.send(header)  # Sends data from sockt2 to socket1
+
+    def startUpProxy(self):
+        self.crypto.reset()
+        while True:
+            if not self.client:
+                continue
+            break
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server.connect((self.defaultServer, 2050))
+        self.running = True
+        self.Route()
+
 
     def start(self):
-        threading.Thread(target=self.enableSWFPROXY)
-        self.listener.bind(('127.0.0.1', 2050))
-        self.listener.listen(1)
-        
-        self.client, _ = self.listener.accept()
-
-        self.server.connect((self.defaultServer, 2050))
-        self.Route()
+        threading.Thread(target=self.enableSWFPROXY).start()
+        threading.Thread(target=self.enableClients).start()
+        self.startUpProxy()
 
     def Route(self):
         # Figure out how to rebind this socket to the reconnect packets ip thing.
-
-        while self.running:
-            try:
+        try:
+            while True:
+                if not self.running:
+                    break
                 rlist = select.select([self.client, self.server], [], [])[0]
 
                 if self.client in rlist:
-                    self.readRemote( self.server, self.client, True)
-                if self.server in rlist and self.running:
-                    # server.send(client.recv(10000))
-                    self.readRemote(self.client,  self.server, False)
-                
-            except KeyboardInterrupt:
-                self.client.close()
-                self.server.close()
-                self.listener.close()
+                    self.readRemote(self.server, self.client, True)
+                if self.server in rlist:
+                    self.readRemote(self.client, self.server, False)
+
+        except KeyboardInterrupt:
+            self.client.close()
+            self.server.close()
+            self.listener.close()
+        print("Loop successfully exited")
 
 
 if __name__ == '__main__':
     proxy = Proxy()
     proxy.loadPlugins()
     proxy.start()
-
-
