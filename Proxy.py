@@ -4,6 +4,8 @@ import select
 import socket
 import struct
 import threading
+import time
+
 import Packet
 import Utilities
 
@@ -24,13 +26,16 @@ class Proxy(object):
         # commonly mutated variables/classes
         # Dont access _packetHooks/_commandHooks directly, they are considered private variables.
         self._packetHooks = {}
-        # self._commandHooks = {}
+        self._commandHooks = {}
         self.running = True
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server = None
         self.client = None
 
     def loadPlugins(self):
+        if self._packetHooks or self._commandHooks:
+            self._packetHooks.clear()
+            self._commandHooks.clear()
         pluginDIR = "./plugins"
         possibleplugins = os.listdir(pluginDIR)
         for i in possibleplugins:
@@ -49,12 +54,13 @@ class Proxy(object):
             policy.close()
 
     def enableClients(self):
+        # TODO: Allow multiple clients connected to the proxy and handle each individually
         self.listener.bind(('127.0.0.1', 2050))
         self.listener.listen(5)
         while True:
             if not self.client:
                 self.client, _ = self.listener.accept()
-                print("new connection")
+            time.sleep(0.01) # Don't touch this, if you do your cpu usage rises to like 99.8%
 
     def hookPacket(self, Packet: Packet.Packet, callback):
         """
@@ -65,6 +71,12 @@ class Proxy(object):
             self._packetHooks[Packet.__name__].append(callback)
         else:
             self._packetHooks[Packet.__name__] = [callback]
+
+    def hookCommand(self, command, callback):
+        if command in self._commandHooks:
+            print("Command already registered. Ignoring...")
+        else:
+            self._commandHooks[command] = callback
 
     def sendPacket(self, packet, forClient):
         data = bytes(packet.data)
@@ -90,13 +102,16 @@ class Proxy(object):
 
     def processClientPacket(self, packet):
         # Implement command hooks later
-        # if (packet.__class__.__name__ == "PLAYERTEXT"):
-        #     playerText = packet.read()
-        #     if playerText.text.startswith("/"):
-        #         commandText = playerText.text.replace("/","").lower()
-        #         for command in self._commandHooks:
-        #             if command == commandText:
-        #                 self._commandHooks[command]()
+        if packet.__class__.__name__ == "PlayerTextPacket":
+            playerText = packet.read()
+            print(playerText)
+            if playerText.startswith("/"):
+                commandText = playerText.replace("/", "").split(" ")
+                print(commandText)
+                for command in self._commandHooks:
+                    if command == commandText[0]:
+                        self._commandHooks[command](commandText[1:])
+                        packet.send = False
 
         # Should call a hooked function
         for packetName in self._packetHooks:
@@ -115,8 +130,10 @@ class Proxy(object):
         sends data from socket2 to socket 1
         """
         header = socket2.recv(5)  # Receives data from socket2
+        if len(header) == 0:
+            self.restartProxy()
         if header == b'\xff':
-            print("got kill byte")
+            print("Kill byte received, all hell will break loose.")
             self.listener.close()
             self.server.close()
             self.client.close()
@@ -146,19 +163,30 @@ class Proxy(object):
                 if not Packet.send:
                     return
             header = header[:5] + self.crypto.serverIn(dedata)
-        socket.send(header)  # Sends data from sockt2 to socket1
+        socket.send(header)  # Sends data from socket2 to socket1
 
     def startUpProxy(self):
         self.crypto.reset()
         while True:
             if not self.client:
+                time.sleep(0.01)  # Don't touch this, otherwise 100% CPU
                 continue
             break
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.connect((self.defaultServer, 2050))
         self.running = True
         self.Route()
+        # threading.Thread(target=self.Route).start()
 
+    def restartProxy(self):
+        """
+        Restarts proxy by closing the client connection, server connection and then starting up the proxy.
+        """
+        self.client.close()
+        self.server.close()
+        self.running = False
+        self.client = None
+        self.startUpProxy()
 
     def start(self):
         threading.Thread(target=self.enableSWFPROXY).start()

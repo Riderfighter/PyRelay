@@ -1,5 +1,4 @@
 import struct
-import binascii
 
 
 class Packet(object):
