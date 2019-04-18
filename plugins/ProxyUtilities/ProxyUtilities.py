@@ -1,12 +1,11 @@
 import threading
 
 import Packets
-
 import Proxy
 
 
 # Basic plugin just to test the callback system
-class WelcomeMessage(object):
+class ProxyUtilities(object):
     # TODO: Handle joining realms
     def __init__(self, proxy: Proxy.Proxy):
         self._proxy = proxy
@@ -16,6 +15,12 @@ class WelcomeMessage(object):
         proxy.hookPacket(Packets.ReconnectPacket, self.onReconnect)
         proxy.hookPacket(Packets.FailurePacket, self.onFailure)
         proxy.hookCommand("reload", self.reloadPlugins)
+        proxy.hookCommand("plugintest", self.sendTest)
+
+    def sendTest(self, args):
+        packet = Packets.NotificationPacket()
+        packet.write(self.objectId, "Ran plugin test.", 0x8B00FF)
+        self._proxy.sendToClient(packet)
 
     def reloadPlugins(self, args):
         self._proxy.loadPlugins()
@@ -33,12 +38,16 @@ class WelcomeMessage(object):
 
     def onReconnect(self, packet: Packets.ReconnectPacket):
         packet.send = False
-        data = packet.read()
-        print(data[7])
+        packet.read()
         newPacket = Packets.ReconnectPacket()
-        newPacket.write(data[0], "localhost", data[2], 2050, data[4], data[5], data[6], data[7])
-        self._proxy.lastServer = packet.host if self._proxy.lastServer != packet.host else ""
+        newPacket.write(packet.name, "localhost", packet.stats, 2050, packet.gameid, packet.keytime, packet.isfromarena,
+                        packet.key)
+        if packet.host != "":
+            self._proxy.lastServer = packet.host
+        if packet.port != -1:
+            self._proxy.lastPort = packet.port
         self._proxy.sendToClient(newPacket)
+        self._proxy.restartProxy()
 
     def onCreateSuccess(self, packet: Packets.CreateSuccessPacket):
         data = packet.read()
