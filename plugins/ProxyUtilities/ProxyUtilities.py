@@ -17,41 +17,54 @@ class ProxyUtilities(object):
         proxy.hookCommand("reload", self.reloadPlugins)
         proxy.hookCommand("plugintest", self.sendTest)
 
-    def sendTest(self, args):
+    def sendTest(self, client, args):
         packet = Packets.NotificationPacket()
         packet.write(self.objectId, "Ran plugin test.", 0x8B00FF)
-        self._proxy.sendToClient(packet)
+        self._proxy.sendToClient(client, packet)
 
-    def reloadPlugins(self, args):
+    def reloadPlugins(self, client, args):
         self._proxy.loadPlugins()
         newPacket = Packets.NotificationPacket()
         newPacket.write(self.objectId, "Plugins reloaded.", 0x8B00FF)
-        self._proxy.sendToClient(newPacket)
+        self._proxy.sendToClient(client, newPacket)
 
-    def onFailure(self, packet: Packets.FailurePacket):
+    def onFailure(self, client, packet: Packets.FailurePacket):
         data = packet.read()
         print(data)
 
-    def onHello(self, packet: Packets.HelloPacket):
+    def onHello(self, client, packet: Packets.HelloPacket):
         data = packet.read()
         print(data)
+        # print(packet.data[packet.index:])
+        # if len(client.realConKey) != 0:
+        #     packet.send = False
+        #     newpacket = Packets.HelloPacket()
+        #     newpacket.write(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], client.realConKey, data[9], data[10],data[11],data[12],data[13],data[14],data[15])
+        #     client.realConKey = b''
+        #     self._proxy.sendToServer(client, newpacket)
 
-    def onReconnect(self, packet: Packets.ReconnectPacket):
+    def onReconnect(self, client, packet: Packets.ReconnectPacket):
         packet.send = False
         packet.read()
         newPacket = Packets.ReconnectPacket()
-        newPacket.write(packet.name, "localhost", packet.stats, 2050, packet.gameid, packet.keytime, packet.isfromarena,
-                        packet.key)
         if packet.host != "":
-            self._proxy.lastServer = packet.host
+            client.lastServer = packet.host
         if packet.port != -1:
-            self._proxy.lastPort = packet.port
-        self._proxy.sendToClient(newPacket)
-        self._proxy.restartProxy()
+            client.lastPort = packet.port
+        # if len(packet.key) != 0:
+        #     client.realConKey = packet.key
+        # newPacket.write(packet.name, "localhost", packet.stats, 2050, packet.gameid, packet.keytime,
+        #                 packet.isfromarena, client.guid)
+        # else:
+        newPacket.write(packet.name, "localhost", packet.stats, 2050, packet.gameid, packet.keytime,
+                        packet.isfromarena,
+                        packet.key)
+        self._proxy.sendToClient(client, newPacket)
+        client.restartClient()
 
-    def onCreateSuccess(self, packet: Packets.CreateSuccessPacket):
+    def onCreateSuccess(self, client, packet: Packets.CreateSuccessPacket):
         data = packet.read()
         self.objectId = data[0]
         newPacket = Packets.NotificationPacket()
         newPacket.write(self.objectId, "Welcome to PyRelay!", 0x8B00FF)
-        threading.Timer(1.5, self._proxy.sendToClient, args=(newPacket,)).start()
+        threading.Timer(1.5, self._proxy.sendToClient, args=(client, newPacket,)).start()
