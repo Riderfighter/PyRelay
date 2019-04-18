@@ -1,5 +1,8 @@
 TODO:
 
+! = Completed
++ = Need to look into
+
 Client:
 AcceptTradePacket !
 AoEAckPacket !
