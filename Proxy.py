@@ -140,6 +140,7 @@ class Proxy(object):
             self.listener.close()
             self.server.close()
             self.client.close()
+            self.running = False
             return
         while len(header) != 5:
             header += socket2.recv(5 - len(header))
