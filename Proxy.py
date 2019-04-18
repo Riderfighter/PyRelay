@@ -17,14 +17,15 @@ class Proxy(object):
     def __init__(self):
         # Constant variables/classes
         self.defaultServer = "54.183.236.213"
+        self.lastServer = self.defaultServer
         self.defaultPort = 2050
-        self.lastServer = ""
         self.lastPort = 2050
         self.packetPointers = Utilities.Packetsetup().setupPacket()
         self.crypto = Utilities.CryptoUtils(b'6a39570cc9de4ec71d64821894', b'c79332b197f92ba85ed281a023')
 
         # commonly mutated variables/classes
         # Dont access _packetHooks/_commandHooks directly, they are considered private variables.
+        self.plugins = []
         self._packetHooks = {}
         self._commandHooks = {}
         self.running = True
@@ -38,9 +39,13 @@ class Proxy(object):
             self._commandHooks.clear()
         pluginDIR = "./plugins"
         possibleplugins = os.listdir(pluginDIR)
-        for i in possibleplugins:
-            module = importlib.import_module(f"plugins.{i}.{i}")
-            getattr(module, i)(self)
+        for i in [file for file in possibleplugins if not file.startswith(".")]:  # removing all files that start with a "." on mac
+            plugin = importlib.import_module(f"plugins.{i}.{i}")
+            if plugin not in self.plugins:
+                self.plugins.append(plugin)
+            getattr(plugin, i)(self)
+        print(self._commandHooks)
+        print(self._packetHooks)
 
     def enableSWFPROXY(self):
         Adobepolicy = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -60,7 +65,7 @@ class Proxy(object):
         while True:
             if not self.client:
                 self.client, _ = self.listener.accept()
-            time.sleep(0.01) # Don't touch this, if you do your cpu usage rises to like 99.8%
+            time.sleep(0.005) # Don't touch this, if you do your cpu usage rises to like 99.8%
 
     def hookPacket(self, Packet: Packet.Packet, callback):
         """
@@ -104,10 +109,8 @@ class Proxy(object):
         # Implement command hooks later
         if packet.__class__.__name__ == "PlayerTextPacket":
             playerText = packet.read()
-            print(playerText)
             if playerText.startswith("/"):
                 commandText = playerText.replace("/", "").split(" ")
-                print(commandText)
                 for command in self._commandHooks:
                     if command == commandText[0]:
                         self._commandHooks[command](commandText[1:])
@@ -169,11 +172,11 @@ class Proxy(object):
         self.crypto.reset()
         while True:
             if not self.client:
-                time.sleep(0.01)  # Don't touch this, otherwise 100% CPU
+                time.sleep(0.005)  # Don't touch this, otherwise 100% CPU
                 continue
             break
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server.connect((self.defaultServer, 2050))
+        self.server.connect((self.lastServer, self.lastPort))
         self.running = True
         self.Route()
         # threading.Thread(target=self.Route).start()
@@ -182,6 +185,7 @@ class Proxy(object):
         """
         Restarts proxy by closing the client connection, server connection and then starting up the proxy.
         """
+        print("restarting proxy")
         self.client.close()
         self.server.close()
         self.running = False
