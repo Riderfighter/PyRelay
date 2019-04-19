@@ -799,8 +799,9 @@ class TextPacket(Packet.Packet):
 
     def read(self):
         return (
-        self.readString(), self.readInt32(), self.readInt32(), self.readByte(), self.readString(), self.readString(),
-        self.readString())
+            self.readString(), self.readInt32(), self.readInt32(), self.readByte(), self.readString(),
+            self.readString(),
+            self.readString())
 
 
 class AccountListPacket(Packet.Packet):
@@ -1198,3 +1199,47 @@ class ReconnectPacket(Packet.Packet):
         self.isfromarena = self.readBoolean()
         self.key = self.readBytearray()
         return self.name, self.host, self.stats, self.port, self.gameid, self.keytime, self.isfromarena, self.key
+
+
+class MapInfoPacket(Packet.Packet):
+    def __init__(self):
+        super(MapInfoPacket, self).__init__()
+        self.width = 0
+        self.height = 0
+        self.name = ""
+        self.displayName = ""
+        self.fp = 0
+        self.background = 0
+        self.difficulty = 0
+        self.allowPlayerTeleport = False
+        self.showDisplays = False
+        self.clientXML = ""
+        self.extraXML = ""
+
+    def write(self, width, height, name, displayName, fp, background, difficulty, allowPlayerTeleport, showDisplays,
+              clientXML, extraXML):
+        self.writeInt32(width)
+        self.writeInt32(height)
+        self.writeString(name)
+        self.writeString(displayName)
+        self.writeUInt32(fp)
+        self.writeInt32(background)
+        self.writeInt32(difficulty)
+        self.writeBoolean(allowPlayerTeleport)
+        self.writeBoolean(showDisplays)
+        self.writeString(clientXML)
+        self.writeString(extraXML)
+
+    def read(self):
+        self.width = self.readInt32()
+        self.height = self.readInt32()
+        self.name = self.readString()
+        self.displayName = self.readString()
+        self.fp = self.readUInt32()
+        self.background = self.readInt32()
+        self.difficulty = self.readInt32()
+        self.allowPlayerTeleport = self.readBoolean()
+        self.showDisplays = self.readBoolean()
+        self.clientXML = self.readString()
+        self.extraXML = self.readString()
+        return self.width, self.height, self.name, self.displayName, self.fp, self.background, self.difficulty, self.allowPlayerTeleport, self.showDisplays, self.clientXML, self.extraXML

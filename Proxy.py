@@ -31,10 +31,7 @@ class Proxy(object):
         self._clients = {}
         self._packetHooks = {}
         self._commandHooks = {}
-        # self.running = True
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # self.server = None
-        # self.client = None
 
     def loadPlugins(self):
         if self._packetHooks or self._commandHooks:
@@ -66,8 +63,7 @@ class Proxy(object):
         while True:
             client, _ = self.listener.accept()
             guid = uuid.uuid4().hex
-            self._clients[guid] = Client.Client(self, client)
-            self._clients[guid].guid = guid
+            self._clients[guid] = Client.Client(self, client, guid)
             for key in list(self._clients):
                 if self._clients[key].closed:
                     del self._clients[key]
@@ -134,44 +130,10 @@ class Proxy(object):
                 for callback in self._packetHooks[packetName]:
                     callback(client, packet)
 
-    # def startUpProxy(self):
-    #     self.crypto.reset()
-    #     while True:
-    #         if not self.client:
-    #             time.sleep(0.005)  # Don't touch this, otherwise 100% CPU
-    #             continue
-    #         break
-    #     self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #     self.server.connect((self.lastServer, self.lastPort))
-    #     self.running = True
-    #     self.Route()
-    #     threading.Thread(target=self.Route).start()
-    #
-    #     self.startUpProxy()
-
     def start(self):
         threading.Thread(target=self.enableSWFPROXY).start()
         threading.Thread(target=self.enableClients).start()
-        # self.startUpProxy()
 
-    # def Route(self):
-    #     # Figure out how to rebind this socket to the reconnect packets ip thing.
-    #     try:
-    #         while True:
-    #             if not self.running:
-    #                 break
-    #             rlist = select.select([self.client, self.server], [], [])[0]
-    #
-    #             if self.client in rlist:
-    #                 self.readRemote(self.server, self.client, True)
-    #             if self.server in rlist:
-    #                 self.readRemote(self.client, self.server, False)
-    #
-    #     except KeyboardInterrupt:
-    #         self.client.close()
-    #         self.server.close()
-    #         self.listener.close()
-    #     print("Loop successfully exited")
 
 
 if __name__ == '__main__':

@@ -1,7 +1,7 @@
 TODO:
 
 ! = Completed
-+ = Need to look into
+? = Need to look into
 
 Client:
 AcceptTradePacket !

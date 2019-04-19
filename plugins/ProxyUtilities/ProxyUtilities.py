@@ -35,13 +35,22 @@ class ProxyUtilities(object):
     def onHello(self, client, packet: Packets.HelloPacket):
         data = packet.read()
         print(data)
+
         # print(packet.data[packet.index:])
-        # if len(client.realConKey) != 0:
-        #     packet.send = False
-        #     newpacket = Packets.HelloPacket()
-        #     newpacket.write(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], client.realConKey, data[9], data[10],data[11],data[12],data[13],data[14],data[15])
-        #     client.realConKey = b''
-        #     self._proxy.sendToServer(client, newpacket)
+
+        if len(packet.key) != 0:
+            packet.send = False
+            print("trying to shift clients")
+            oldClient = client
+            client = self._proxy._clients[packet.key.decode("utf8")]
+            client.client = oldClient.client
+            client.start()
+            del self._proxy._clients[oldClient.guid]
+            newpacket = Packets.HelloPacket()
+            newpacket.write(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7],
+                            client.realConKey, data[9], data[10], data[11], data[12], data[13], data[14], data[15])
+            client.realConKey = b''
+            self._proxy.sendToServer(client, newpacket)
 
     def onReconnect(self, client, packet: Packets.ReconnectPacket):
         packet.send = False
@@ -51,14 +60,10 @@ class ProxyUtilities(object):
             client.lastServer = packet.host
         if packet.port != -1:
             client.lastPort = packet.port
-        # if len(packet.key) != 0:
-        #     client.realConKey = packet.key
-        # newPacket.write(packet.name, "localhost", packet.stats, 2050, packet.gameid, packet.keytime,
-        #                 packet.isfromarena, client.guid)
-        # else:
+        if len(packet.key) != 0:
+            client.realConKey = packet.key
         newPacket.write(packet.name, "localhost", packet.stats, 2050, packet.gameid, packet.keytime,
-                        packet.isfromarena,
-                        packet.key)
+                        packet.isfromarena, client.guid.encode("utf8"))
         self._proxy.sendToClient(client, newPacket)
         client.restartClient()
 
