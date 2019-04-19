@@ -65,7 +65,7 @@
 	</Packet>
 	<Packet>
 		<PacketName>HELLO</PacketName>
-		<PacketID>100</PacketID>
+		<PacketID>85</PacketID>
 	</Packet>
 	<Packet>
 		<PacketName>GOTO</PacketName>
@@ -93,7 +93,7 @@
 	</Packet>
 	<Packet>
 		<PacketName>MAPINFO</PacketName>
-		<PacketID>85</PacketID>
+		<PacketID>100</PacketID>
 	</Packet>
 	<Packet>
 		<PacketName>LOAD</PacketName>
