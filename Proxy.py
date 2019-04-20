@@ -133,8 +133,6 @@ class Proxy(object):
         sends data from socket2 to socket 1
         """
         header = socket2.recv(5)  # Receives data from socket2
-        if len(header) == 0:
-            self.restartProxy()
         if header == b'\xff':
             print("Kill byte received, all hell will break loose.")
             self.listener.close()
