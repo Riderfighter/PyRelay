@@ -11,6 +11,7 @@ class Client(object):
         self._proxy = proxy
         self.client = client
         self.guid = guid
+        self.lock = threading.Lock()
         self.realConKey = b''
         self.running = True
         self.closed = False

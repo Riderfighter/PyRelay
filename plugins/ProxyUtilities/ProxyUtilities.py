@@ -44,12 +44,12 @@ class ProxyUtilities(object):
             oldClient = client
             client = self._proxy._clients[packet.key.decode("utf8")]
             client.client = oldClient.client
-            client.start()
-            del self._proxy._clients[oldClient.guid]
+            client.crypto = oldClient.crypto
             newpacket = Packets.HelloPacket()
             newpacket.write(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7],
                             client.realConKey, data[9], data[10], data[11], data[12], data[13], data[14], data[15])
             client.realConKey = b''
+            client.start()
             self._proxy.sendToServer(client, newpacket)
 
     def onReconnect(self, client, packet: Packets.ReconnectPacket):

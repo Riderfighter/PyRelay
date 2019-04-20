@@ -64,9 +64,9 @@ class Proxy(object):
             client, _ = self.listener.accept()
             guid = uuid.uuid4().hex
             self._clients[guid] = Client.Client(self, client, guid)
-            for key in list(self._clients):
-                if self._clients[key].closed:
-                    del self._clients[key]
+            # for key in list(self._clients):
+            #     if self._clients[key].closed:
+            #         del self._clients[key]
             time.sleep(0.005) # Don't touch this, if you do your cpu usage rises to like 99.8%
 
     def hookPacket(self, Packet: Packet.Packet, callback):
@@ -95,10 +95,12 @@ class Proxy(object):
         if packetId == "":
             return
         if forClient:
-            header = struct.pack(">ib", len(data) + 5, packetId) + client.crypto.serverIn(data)
+            with client.lock:
+                header = struct.pack(">ib", len(data) + 5, packetId) + client.crypto.serverIn(data)
             client.client.send(header)
         else:
-            header = struct.pack(">ib", len(data) + 5, packetId) + client.crypto.clientIn(data)
+            with client.lock:
+                header = struct.pack(">ib", len(data) + 5, packetId) + client.crypto.clientIn(data)
             client.server.send(header)
 
     def sendToClient(self, client, packet):
