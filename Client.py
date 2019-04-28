@@ -1,7 +1,9 @@
 import select
 import socket
 import struct
-import threading
+import importlib
+import os
+import Packet
 
 import State
 import Utilities
@@ -13,11 +15,43 @@ class Client:
     packetPointers = Utilities.Packetsetup().setupPacket()
     server = None
     running = True
+    plugins = []
+    _packetHooks = {}
+    _commandHooks = {}
 
     def __init__(self, proxy, client):
         self._proxy = proxy
         self.client = client
-        self.start()
+        self.loadPlugins()
+
+    def hookPacket(self, packet: Packet.Packet, callback):
+        """
+        :param packet: The non-initialized packet you'd like to hook.
+        :param callback: The non-initialized callback function.
+        """
+        if self._packetHooks.get(packet.__name__):
+            self._packetHooks[packet.__name__].append(callback)
+        else:
+            self._packetHooks[packet.__name__] = [callback]
+
+    def hookCommand(self, command, callback):
+        if command in self._commandHooks:
+            print("Command already registered. Ignoring...")
+        else:
+            self._commandHooks[command] = callback
+
+    def loadPlugins(self):
+        if self._packetHooks or self._commandHooks:
+            self._packetHooks.clear()
+            self._commandHooks.clear()
+        plugin_dir = "./plugins"
+        possible_plugins = os.listdir(plugin_dir)
+        for i in [file for file in possible_plugins if
+                  not file.startswith(".")]:  # removing all files that start with a "." on mac
+            plugin = importlib.import_module(f"plugins.{i}.{i}")
+            if plugin not in self.plugins:
+                self.plugins.append(plugin)
+            getattr(plugin, i)(self._proxy, self)
 
     @property
     def state(self) -> State:
@@ -33,7 +67,7 @@ class Client:
 
     def start(self):
         self.running = True
-        threading.Thread(target=self.Route).start()
+        self.Route()
 
     def restartClient(self):
         """
@@ -43,7 +77,6 @@ class Client:
         self.running = False
         self.client.close()
         self.server.close()
-        self.crypto.reset()
 
     def readRemote(self, fromClient=True):
         """
@@ -70,7 +103,7 @@ class Client:
                 if self.packetPointers.get(packetid):
                     Packet = self.packetPointers.get(packetid)()
                     Packet.data.extend(dedata)
-                    self._proxy.processClientPacket(self, Packet)
+                    self.processClientPacket(Packet)
                     if not Packet.send:
                         return
                 header = header[:5] + self.crypto.clientIn(dedata)
@@ -79,7 +112,7 @@ class Client:
                 if self.packetPointers.get(packetid):
                     Packet = self.packetPointers.get(packetid)()
                     Packet.data.extend(dedata)
-                    self._proxy.processServerPacket(self, Packet)
+                    self.processServerPacket(Packet)
                     if not Packet.send:
                         return
                 header = header[:5] + self.crypto.serverIn(dedata)
@@ -88,6 +121,48 @@ class Client:
         except OSError as e:
             print(e)
             print("Client disconnected.")
+
+    def sendPacket(self, packet, for_client):
+        data = bytes(packet.data)
+        for key, value in self.packetPointers.items():
+            if value and value.__name__ == packet.__class__.__name__:
+                packet_id = key
+                break
+        if for_client:
+            header = struct.pack(">ib", len(data) + 5, packet_id) + self.crypto.serverIn(data)
+            self.client.send(header)
+        else:
+            header = struct.pack(">ib", len(data) + 5, packet_id) + self.crypto.clientIn(data)
+            self.server.send(header)
+
+    def sendToClient(self, packet):
+        self.sendPacket(packet, True)
+
+    def sendToServer(self, packet):
+        self.sendPacket(packet, False)
+
+    def processClientPacket(self, packet):
+        # Implement command hooks later
+        if packet.__class__.__name__ == "PlayerTextPacket":
+            player_text = packet.read()
+            if player_text.startswith("/"):
+                command_text = player_text.replace("/", "").split(" ")
+                for command in self._proxy._commandHooks:
+                    if command == command_text[0]:
+                        self._proxy._commandHooks[command](command_text[1:])
+                        packet.send = False
+
+        # Should call a hooked function
+        for packetName in self._packetHooks:
+            if packetName == packet.__class__.__name__:
+                for callback in self._packetHooks[packetName]:
+                    callback(packet)
+
+    def processServerPacket(self, packet):
+        for packetName in self._packetHooks:
+            if packetName == packet.__class__.__name__:
+                for callback in self._packetHooks[packetName]:
+                    callback(packet)
 
     def Route(self):
         # Figure out how to rebind this socket to the reconnect packets ip thing.

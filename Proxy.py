@@ -14,36 +14,12 @@ import Utilities
 # client to proxy only
 
 class Proxy(object):
-    def __init__(self):
-        # Constant variables/classes
-        self.defaultServer = "54.183.236.213"
-        self.defaultPort = 2050
-        # self.lastServer = self.defaultServer
-        # self.lastPort = 2050
-        self.packetPointers = Utilities.Packetsetup().setupPacket()
-        # self.crypto = Utilities.CryptoUtils(b'6a39570cc9de4ec71d64821894', b'c79332b197f92ba85ed281a023')
-
-        # commonly mutated variables/classes
-        # Dont access _packetHooks/_commandHooks directly, they are considered private variables.
-        self.plugins = []
-        self.states = {}
-        self._clients = []
-        self._packetHooks = {}
-        self._commandHooks = {}
-        self.listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    def loadPlugins(self):
-        if self._packetHooks or self._commandHooks:
-            self._packetHooks.clear()
-            self._commandHooks.clear()
-        plugin_dir = "./plugins"
-        possible_plugins = os.listdir(plugin_dir)
-        for i in [file for file in possible_plugins if
-                  not file.startswith(".")]:  # removing all files that start with a "." on mac
-            plugin = importlib.import_module(f"plugins.{i}.{i}")
-            if plugin not in self.plugins:
-                self.plugins.append(plugin)
-            getattr(plugin, i)(self)
+    # Constant variables/classes
+    listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    _clients = []
+    # commonly mutated variables/classes
+    # Dont access _packetHooks/_commandHooks directly, they are considered private variables.
+    states = {}
 
     def enableSWFPROXY(self):
         adobe_policy = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -62,67 +38,11 @@ class Proxy(object):
         self.listener.listen(5)
         while True:
             client, _ = self.listener.accept()
-            self._clients.append(Client.Client(self, client))
+            client = Client.Client(self, client)
+            self._clients.append(client)
+            client.loadPlugins()
+            threading.Thread(target=client.start).start()
             time.sleep(0.005)  # Don't touch this, if you do your cpu usage rises to like 99.8%
-
-    def hookPacket(self, packet: Packet.Packet, callback):
-        """
-        :param packet: The non-initialized packet you'd like to hook.
-        :param callback: The non-initialized callback function.
-        """
-        if self._packetHooks.get(packet.__name__):
-            self._packetHooks[packet.__name__].append(callback)
-        else:
-            self._packetHooks[packet.__name__] = [callback]
-
-    def hookCommand(self, command, callback):
-        if command in self._commandHooks:
-            print("Command already registered. Ignoring...")
-        else:
-            self._commandHooks[command] = callback
-
-    def sendPacket(self, client, packet, for_client):
-        data = bytes(packet.data)
-        for key, value in self.packetPointers.items():
-            if value and value.__name__ == packet.__class__.__name__:
-                packet_id = key
-                print(packet_id)
-                break
-        if for_client:
-            header = struct.pack(">ib", len(data) + 5, packet_id) + client.crypto.serverIn(data)
-            client.client.send(header)
-        else:
-            header = struct.pack(">ib", len(data) + 5, packet_id) + client.crypto.clientIn(data)
-            client.server.send(header)
-
-    def sendToClient(self, client, packet):
-        self.sendPacket(client, packet, True)
-
-    def sendToServer(self, client, packet):
-        self.sendPacket(client, packet, False)
-
-    def processClientPacket(self, client, packet):
-        # Implement command hooks later
-        if packet.__class__.__name__ == "PlayerTextPacket":
-            player_text = packet.read()
-            if player_text.startswith("/"):
-                command_text = player_text.replace("/", "").split(" ")
-                for command in self._commandHooks:
-                    if command == command_text[0]:
-                        self._commandHooks[command](client, command_text[1:])
-                        packet.send = False
-
-        # Should call a hooked function
-        for packetName in self._packetHooks:
-            if packetName == packet.__class__.__name__:
-                for callback in self._packetHooks[packetName]:
-                    callback(client, packet)
-
-    def processServerPacket(self, client, packet):
-        for packetName in self._packetHooks:
-            if packetName == packet.__class__.__name__:
-                for callback in self._packetHooks[packetName]:
-                    callback(client, packet)
 
     def start(self):
         threading.Thread(target=self.enableSWFPROXY).start()
@@ -131,5 +51,4 @@ class Proxy(object):
 
 if __name__ == '__main__':
     proxy = Proxy()
-    proxy.loadPlugins()
     proxy.start()

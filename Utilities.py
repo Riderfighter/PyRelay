@@ -14,23 +14,15 @@ class CryptoUtils:
     """
     Takes the client -> server key and the server -> client key in the constructer.
     """
+    email = b""
+    password = b""
+    rsakey = None
 
     def __init__(self, outgoing, incoming):
-        self.email = bytearray()
-        self.password = bytearray()
-        self.outgoing = outgoing
-        self.incoming = incoming
         self.ARC4DecryptinCipher = ARC4.new(binascii.unhexlify(incoming))
         self.ARC4EncryptinCipher = ARC4.new(binascii.unhexlify(incoming))
         self.ARC4DecryptoutCipher = ARC4.new(binascii.unhexlify(outgoing))
         self.ARC4EncryptoutCipher = ARC4.new(binascii.unhexlify(outgoing))
-        self.rsakey = None
-
-    def reset(self):
-        self.ARC4DecryptinCipher = ARC4.new(binascii.unhexlify(self.incoming))
-        self.ARC4EncryptinCipher = ARC4.new(binascii.unhexlify(self.incoming))
-        self.ARC4DecryptoutCipher = ARC4.new(binascii.unhexlify(self.outgoing))
-        self.ARC4EncryptoutCipher = ARC4.new(binascii.unhexlify(self.outgoing))
 
     def RSAEncrypt(self, data):
         key = RSA.importKey(self.rsakey)
@@ -73,7 +65,8 @@ class Packetsetup:
                                   'UPDATEACK': Packets.UpdateAckPacket, 'NOTIFICATION': Packets.NotificationPacket,
                                   'NEWTICK': Packets.NewTickPacket, 'INVSWAP': Packets.InvSwapPacket,
                                   'USEITEM': Packets.UseItemPacket, 'SHOWEFFECT': None, 'HELLO': Packets.HelloPacket,
-                                  'GOTO': None, 'INVDROP': Packets.InvDropPacket, 'INVRESULT': None, 'RECONNECT': Packets.ReconnectPacket,
+                                  'GOTO': None, 'INVDROP': Packets.InvDropPacket, 'INVRESULT': None,
+                                  'RECONNECT': Packets.ReconnectPacket,
                                   'PING': None, 'PONG': Packets.PongPacket, 'MAPINFO': None, 'LOAD': Packets.LoadPacket,
                                   'PIC': None, 'SETCONDITION': Packets.SetConditionPacket,
                                   'TELEPORT': Packets.TeleportPacket, 'USEPORTAL': Packets.UsePortal, 'DEATH': None,
@@ -84,14 +77,16 @@ class Packetsetup:
                                   'SQUAREHIT': Packets.SquareHitPacket, 'GOTOACK': Packets.GotoAckPacket,
                                   'EDITACCOUNTLIST': Packets.EditAccountListPacket, 'ACCOUNTLIST': None,
                                   'QUESTOBJID': None, 'CHOOSENAME': Packets.ChooseNamePacket, 'NAMERESULT': None,
-                                  'CREATEGUILD': Packets.CreateGuildPacket, 'GUILDRESULT': None,
+                                  'CREATEGUILD': Packets.CreateGuildPacket,
+                                  'GUILDRESULT': Packets.CreateGuildResultPacket,
                                   'GUILDREMOVE': Packets.GuildRemovePacket, 'GUILDINVITE': Packets.GuildInvitePacket,
-                                  'ALLYSHOOT': None, 'ENEMYSHOOT': None, 'REQUESTTRADE': Packets.RequestTradePacket,
+                                  'ALLYSHOOT': Packets.AllyShootPacket, 'ENEMYSHOOT': Packets.EnemyShootPacket,
+                                  'REQUESTTRADE': Packets.RequestTradePacket,
                                   'TRADEREQUESTED': None, 'TRADESTART': None, 'CHANGETRADE': Packets.ChangeTradePacket,
                                   'TRADECHANGED': None, 'ACCEPTTRADE': Packets.AcceptTradePacket,
                                   'CANCELTRADE': Packets.CancelTradePacket, 'TRADEDONE': None, 'TRADEACCEPTED': None,
                                   'CLIENTSTAT': None, 'CHECKCREDITS': Packets.CheckCreditsPacket,
-                                  'ESCAPE': Packets.EscapePacket, 'FILE': None, 'INVITEDTOGUILD': None,
+                                  'ESCAPE': Packets.EscapePacket, 'FILE': Packets.FilePacket, 'INVITEDTOGUILD': None,
                                   'JOINGUILD': Packets.JoinGuildPacket,
                                   'CHANGEGUILDRANK': Packets.ChangeGuildRankPacket, 'PLAYSOUND': None,
                                   'GLOBALNOTIFICATION': None, 'RESKIN': Packets.ReskinPacket, 'PETUPGRADEREQUEST': None,
