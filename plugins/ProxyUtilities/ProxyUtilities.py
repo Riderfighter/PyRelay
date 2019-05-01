@@ -37,6 +37,7 @@ class ProxyUtilities:
         print(data)
 
     def onHello(self, packet: Packets.HelloPacket):
+        print(packet.data)
         data = packet.read()
         # print(packet.data[packet.index:])
 

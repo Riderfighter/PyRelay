@@ -14,7 +14,7 @@ class Client:
     crypto = Utilities.CryptoUtils(b'6a39570cc9de4ec71d64821894', b'c79332b197f92ba85ed281a023')
     packetPointers = Utilities.Packetsetup().setupPacket()
     server = None
-    running = True
+    running = False
     plugins = []
     _packetHooks = {}
     _commandHooks = {}
@@ -87,9 +87,7 @@ class Client:
             header = socket2.recv(5)  # Receives data from socket2
             if header == b'\xff':
                 print("Kill byte received, all hell will break loose.")
-                self.server.close()
-                self.client.close()
-                self.running = False
+                self.restartClient()
                 return
             while len(header) != 5:
                 header += socket2.recv(5 - len(header))
