@@ -34,8 +34,8 @@ class Proxy(object):
         self.listener.listen(5)
         while True:
             client, _ = self.listener.accept()
-            client = Client.Client(self, client)
-            threading.Thread(target=client.start).start()
+            client1 = Client.Client(self, client)
+            threading.Thread(target=client1.start).start()
             time.sleep(0.005)  # Don't touch this, if you do your cpu usage rises to like 99.8%
 
     def start(self):
