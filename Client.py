@@ -1,12 +1,13 @@
+import binascii
+import importlib
+import os
 import select
 import socket
 import struct
-import importlib
-import os
-import Packet
-import binascii
 
 from Crypto.Cipher import ARC4
+
+import Packet
 import State
 import Utilities
 

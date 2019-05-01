@@ -10,7 +10,7 @@ import State
 # Basic plugin just to test the callback system
 class ProxyUtilities:
     # TODO: Handle joining realms
-    def __init__(self, proxy: Proxy.Proxy,  client: Client.Client):
+    def __init__(self, proxy: Proxy.Proxy, client: Client.Client):
         self._client = client
         self._proxy = proxy
         self.objectId = 0

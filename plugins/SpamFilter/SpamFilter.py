@@ -1,12 +1,14 @@
-import Packets
 import Client
+import Packets
 import Proxy
+
 
 class SpamFilter:
     def __init__(self, proxy: Proxy.Proxy, client: Client.Client):
         self._client = client
         self._proxy = proxy
-        self.spam_to_filter = ['realmbags', 'rpgstash', 'rotmgmax', 'realmstock', 'eye of oryx', "oryxin", "realm power.net", "rwtmg.com"]
+        self.spam_to_filter = ['realmbags', 'rpgstash', 'rotmgmax', 'realmstock', 'eye of oryx', "oryxin",
+                               "realm power.net", "rwtmg.com"]
         client.hookPacket(Packets.TextPacket, self.onText)
 
     def onText(self, packet):
