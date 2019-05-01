@@ -4,14 +4,22 @@ import struct
 import importlib
 import os
 import Packet
+import binascii
 
+from Crypto.Cipher import ARC4
 import State
 import Utilities
 
 
 class Client:
+    incoming = b'c79332b197f92ba85ed281a023'
+    outgoing = b'6a39570cc9de4ec71d64821894'
+    ARC4DecryptinCipher = ARC4.new(binascii.unhexlify(incoming))
+    ARC4EncryptinCipher = ARC4.new(binascii.unhexlify(incoming))
+    ARC4DecryptoutCipher = ARC4.new(binascii.unhexlify(outgoing))
+    ARC4EncryptoutCipher = ARC4.new(binascii.unhexlify(outgoing))
     _state: State = None
-    crypto = Utilities.CryptoUtils(b'6a39570cc9de4ec71d64821894', b'c79332b197f92ba85ed281a023')
+    # crypto = Utilities.CryptoUtils(b'6a39570cc9de4ec71d64821894', b'c79332b197f92ba85ed281a023')
     packetPointers = Utilities.Packetsetup().setupPacket()
     server = None
     running = False
@@ -97,23 +105,23 @@ class Client:
             while len(header[5:]) != datalength:
                 header += socket2.recv(datalength - len(header[5:]))
             if fromClient:
-                dedata = self.crypto.clientOut(header[5:])
+                dedata = self.ARC4DecryptoutCipher.decrypt(header[5:])
                 if self.packetPointers.get(packetid):
                     Packet = self.packetPointers.get(packetid)()
                     Packet.data.extend(dedata)
                     self.processClientPacket(Packet)
                     if not Packet.send:
                         return
-                header = header[:5] + self.crypto.clientIn(dedata)
+                header = header[:5] + self.ARC4EncryptoutCipher.encrypt(dedata)
             else:
-                dedata = self.crypto.serverOut(header[5:])
+                dedata = self.ARC4DecryptinCipher.decrypt(header[5:])
                 if self.packetPointers.get(packetid):
                     Packet = self.packetPointers.get(packetid)()
                     Packet.data.extend(dedata)
                     self.processServerPacket(Packet)
                     if not Packet.send:
                         return
-                header = header[:5] + self.crypto.serverIn(dedata)
+                header = header[:5] + self.ARC4EncryptinCipher.encrypt(dedata)
             socket1 = self.server if fromClient else self.client
             socket1.send(header)  # Sends data from socket2 to socket1
         except OSError as e:
@@ -127,10 +135,10 @@ class Client:
                 packet_id = key
                 break
         if for_client:
-            header = struct.pack(">ib", len(data) + 5, packet_id) + self.crypto.serverIn(data)
+            header = struct.pack(">ib", len(data) + 5, packet_id) + self.ARC4EncryptinCipher.encrypt(data)
             self.client.send(header)
         else:
-            header = struct.pack(">ib", len(data) + 5, packet_id) + self.crypto.clientIn(data)
+            header = struct.pack(">ib", len(data) + 5, packet_id) + self.ARC4EncryptoutCipher.encrypt(data)
             self.server.send(header)
 
     def sendToClient(self, packet):
