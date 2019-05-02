@@ -9,9 +9,9 @@ class SpamFilter:
         self._proxy = proxy
         self.spam_to_filter = ['realmbags', 'rpgstash', 'rotmgmax', 'realmstock', 'eye of oryx', "oryxin",
                                "realm power.net", "rwtmg.com"]
-        client.hook_packet(Packets.TextPacket, self.onText)
+        client.hook_packet(Packets.TextPacket, self.on_text)
 
-    def onText(self, packet):
+    def on_text(self, packet):
         data = packet.read()
         for keyword in self.spam_to_filter:
             if keyword in data[5].lower():

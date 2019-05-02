@@ -6,7 +6,7 @@ import Client
 
 
 # 6a39570cc9de4ec71d64821894 c79332b197f92ba85ed281a023
-# client to proxy only
+# Client.py to proxy only
 
 class Proxy(object):
     # Constant variables/classes

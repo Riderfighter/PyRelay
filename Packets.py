@@ -11,12 +11,12 @@ class AcceptTradePacket(Packet.Packet):
         self.yourOffers = []
 
     def write(self, myOffers, yourOffers):
-        self.writeBooleanarray(myOffers)
-        self.writeBooleanarray(yourOffers)
+        self.write_booleanarray(myOffers)
+        self.write_booleanarray(yourOffers)
 
     def read(self):
-        self.myOffers = self.readBooleanarray()
-        self.yourOffers = self.readBooleanarray()
+        self.myOffers = self.read_booleanarray()
+        self.yourOffers = self.read_booleanarray()
         return self.myOffers, self.yourOffers
 
 
@@ -28,14 +28,14 @@ class AoEAckPacket(Packet.Packet):
         self.Y = 0.0
 
     def write(self, time, x, y):
-        self.writeInt32(time)
-        self.writeFloat(x)
-        self.writeFloat(y)
+        self.write_int32(time)
+        self.write_float(x)
+        self.write_float(y)
 
     def read(self):
-        self.Time = self.readInt32()
-        self.X = self.readFloat()
-        self.Y = self.readFloat()
+        self.Time = self.read_int32()
+        self.X = self.read_float()
+        self.Y = self.read_float()
         return self.Time, (self.X, self.Y)
 
 
@@ -46,12 +46,12 @@ class BuyPacket(Packet.Packet):
         self.quantitiy = 0
 
     def write(self, objectId, quantitiy):
-        self.writeInt32(objectId)
-        self.writeInt32(quantitiy)
+        self.write_int32(objectId)
+        self.write_int32(quantitiy)
 
     def read(self):
-        self.objectId = self.readInt32()
-        self.quantitiy = self.readInt32()
+        self.objectId = self.read_int32()
+        self.quantitiy = self.read_int32()
         return self.objectId, self.quantitiy
 
 
@@ -73,12 +73,12 @@ class ChangeGuildRankPacket(Packet.Packet):
         self.guildRank = 0
 
     def write(self, name, guildrank):
-        self.writeString(name)
-        self.writeInt32(guildrank)
+        self.write_string(name)
+        self.write_int32(guildrank)
 
     def read(self):
-        self.name = self.readString()
-        self.guildRank = self.readInt32()
+        self.name = self.read_string()
+        self.guildRank = self.read_int32()
         return self.name, self.guildRank
 
 
@@ -88,10 +88,10 @@ class ChangeTradePacket(Packet.Packet):
         self.offers = []
 
     def write(self, offers):
-        self.writeBooleanarray(offers)
+        self.write_booleanarray(offers)
 
     def read(self):
-        self.offers = self.readBooleanarray()
+        self.offers = self.read_booleanarray()
         return self.offers
 
 
@@ -112,10 +112,10 @@ class ChooseNamePacket(Packet.Packet):
         self.name = ''
 
     def write(self, name):
-        self.writeString(name)
+        self.write_string(name)
 
     def read(self):
-        self.name = self.readString()
+        self.name = self.read_string()
         return self.name
 
 
@@ -125,10 +125,10 @@ class CreateGuildPacket(Packet.Packet):
         self.name = ''
 
     def write(self, name):
-        self.writeString(name)
+        self.write_string(name)
 
     def read(self):
-        self.name = self.readString()
+        self.name = self.read_string()
 
 
 class CreatePacket(Packet.Packet):
@@ -138,12 +138,12 @@ class CreatePacket(Packet.Packet):
         self.skinType = 0
 
     def write(self, classType, skinType):
-        self.writeUInt16(classType)
-        self.writeUInt16(skinType)
+        self.write_uint16(classType)
+        self.write_uint16(skinType)
 
     def read(self):
-        self.classType = self.readUInt16()
-        self.skinType = self.readUInt16()
+        self.classType = self.read_uint16()
+        self.skinType = self.read_uint16()
         return self.classType, self.skinType
 
 
@@ -155,14 +155,14 @@ class EditAccountListPacket(Packet.Packet):
         self.objectId = 0
 
     def write(self, accountlistId, add, objectid):
-        self.writeInt32(accountlistId)
-        self.writeBoolean(add)
-        self.writeInt32(objectid)
+        self.write_int32(accountlistId)
+        self.write_boolean(add)
+        self.write_int32(objectid)
 
     def read(self):
-        self.accountlistId = self.readInt32()
-        self.add = self.readBoolean()
-        self.objectId = self.readInt32()
+        self.accountlistId = self.read_int32()
+        self.add = self.read_boolean()
+        self.objectId = self.read_int32()
         return self.accountlistId, self.add, self.objectId
 
 
@@ -175,16 +175,16 @@ class EnemyHitPacket(Packet.Packet):
         self.killed = None
 
     def write(self, time, bulletid, targetid, killed):
-        self.writeInt32(time)
-        self.writeByte(bulletid)
-        self.writeInt32(targetid)
-        self.writeBoolean(killed)
+        self.write_int32(time)
+        self.write_byte(bulletid)
+        self.write_int32(targetid)
+        self.write_boolean(killed)
 
     def read(self):
-        self.time = self.readInt32()
-        self.bulletid = self.readByte()
-        self.targetid = self.readInt32()
-        self.killed = self.readBoolean()
+        self.time = self.read_int32()
+        self.bulletid = self.read_byte()
+        self.targetid = self.read_int32()
+        self.killed = self.read_boolean()
         return self.time, self.bulletid, self.targetid, self.killed
 
 
@@ -194,10 +194,10 @@ class EnterArenaPacket(Packet.Packet):
         self.currency = 0
 
     def write(self, currency):
-        self.writeInt32(currency)
+        self.write_int32(currency)
 
     def read(self):
-        self.currency = self.readInt32()
+        self.currency = self.read_int32()
         return self.currency
 
 
@@ -218,10 +218,10 @@ class GotoAckPacket(Packet.Packet):
         self.time = 0
 
     def write(self, time):
-        self.writeInt16(time)
+        self.write_int16(time)
 
     def read(self):
-        self.time = self.readInt32()
+        self.time = self.read_int32()
         return self.time
 
 
@@ -233,14 +233,14 @@ class GroundDamagePacket(Packet.Packet):
         self.Y = 0.0
 
     def write(self, time, x, y):
-        self.writeInt32(time)
-        self.writeFloat(x)
-        self.writeFloat(y)
+        self.write_int32(time)
+        self.write_float(x)
+        self.write_float(y)
 
     def read(self):
-        self.time = self.readInt32()
-        self.X = self.readFloat()
-        self.Y = self.readFloat()
+        self.time = self.read_int32()
+        self.X = self.read_float()
+        self.Y = self.read_float()
         return self.time, self.X, self.Y
 
 
@@ -250,10 +250,10 @@ class GuildInvitePacket(Packet.Packet):
         self.name = ''
 
     def write(self, name):
-        self.writeString(name)
+        self.write_string(name)
 
     def read(self):
-        self.name = self.readString()
+        self.name = self.read_string()
         return self.name
 
 
@@ -263,10 +263,10 @@ class GuildRemovePacket(Packet.Packet):
         self.name = ''
 
     def write(self, name):
-        self.writeString(name)
+        self.write_string(name)
 
     def read(self):
-        self.name = self.readString()
+        self.name = self.read_string()
         return self.name
 
 
@@ -292,40 +292,40 @@ class HelloPacket(Packet.Packet):
 
     def write(self, buildVersion, gameId, GUID, random1, password, random2, secret, keyTime, key, mapjson, entrytag,
               gamenet, gamenetuserId, playplatform, platformtoken, usertoken):
-        self.writeString(buildVersion)
-        self.writeInt32(gameId)
-        self.writeString(GUID)
-        self.writeInt32(random1)
-        self.writeString(password)
-        self.writeInt32(random2)
-        self.writeString(secret)
-        self.writeInt32(keyTime)
-        self.writeBytearray(key)
-        self.writeString(mapjson)
-        self.writeString(entrytag)
-        self.writeString(gamenet)
-        self.writeString(gamenetuserId)
-        self.writeString(playplatform)
-        self.writeString(platformtoken)
-        self.writeString(usertoken)
+        self.write_string(buildVersion)
+        self.write_int32(gameId)
+        self.write_string(GUID)
+        self.write_int32(random1)
+        self.write_string(password)
+        self.write_int32(random2)
+        self.write_string(secret)
+        self.write_int32(keyTime)
+        self.write_bytearray(key)
+        self.write_string(mapjson)
+        self.write_string(entrytag)
+        self.write_string(gamenet)
+        self.write_string(gamenetuserId)
+        self.write_string(playplatform)
+        self.write_string(platformtoken)
+        self.write_string(usertoken)
 
     def read(self):
-        self.buildVersion = self.readString()
-        self.gameId = self.readInt32()
-        self.GUID = self.readString()
-        self.random1 = self.readInt32()
-        self.password = self.readString()
-        self.random2 = self.readInt32()
-        self.secret = self.readString()
-        self.keyTime = self.readInt32()
-        self.key = self.readBytearray()
-        self.MapJSON = self.readString()
-        self.entryTag = self.readString()
-        self.gameNet = self.readString()
-        self.gamenetuserId = self.readString()
-        self.playPlatform = self.readString()
-        self.platformToken = self.readString()
-        self.userToken = self.readString()
+        self.buildVersion = self.read_string()
+        self.gameId = self.read_int32()
+        self.GUID = self.read_string()
+        self.random1 = self.read_int32()
+        self.password = self.read_string()
+        self.random2 = self.read_int32()
+        self.secret = self.read_string()
+        self.keyTime = self.read_int32()
+        self.key = self.read_bytearray()
+        self.MapJSON = self.read_string()
+        self.entryTag = self.read_string()
+        self.gameNet = self.read_string()
+        self.gamenetuserId = self.read_string()
+        self.playPlatform = self.read_string()
+        self.platformToken = self.read_string()
+        self.userToken = self.read_string()
         return self.buildVersion, self.gameId, self.GUID, self.random1, self.password, self.random2, self.secret, self.keyTime, self.key, self.MapJSON, self.entryTag, self.gameNet, self.gamenetuserId, self.playPlatform, self.platformToken, self.userToken
 
 
@@ -335,12 +335,12 @@ class InvDropPacket(Packet.Packet):
         self.slot = ()
 
     def write(self, objectid, slotid, objecttype):
-        self.writeInt32(objectid)
-        self.writeByte(slotid)
-        self.writeInt32(objecttype)
+        self.write_int32(objectid)
+        self.write_byte(slotid)
+        self.write_int32(objecttype)
 
     def read(self):
-        self.slot = (self.readInt32(), self.readByte(), self.readInt32())
+        self.slot = (self.read_int32(), self.read_byte(), self.read_int32())
         return self.slot
 
 
@@ -353,21 +353,21 @@ class InvSwapPacket(Packet.Packet):
         self.slotobject2 = ()
 
     def write(self, time, location, slotobject1, slotobject2):
-        self.writeInt32(time)
-        self.writeFloat(location[0])
-        self.writeFloat(location[1])
-        self.writeInt32(slotobject1[0])
-        self.writeByte(slotobject1[1])
-        self.writeInt32(slotobject1[2])
-        self.writeInt32(slotobject2[0])
-        self.writeByte(slotobject2[1])
-        self.writeInt32(slotobject2[2])
+        self.write_int32(time)
+        self.write_float(location[0])
+        self.write_float(location[1])
+        self.write_int32(slotobject1[0])
+        self.write_byte(slotobject1[1])
+        self.write_int32(slotobject1[2])
+        self.write_int32(slotobject2[0])
+        self.write_byte(slotobject2[1])
+        self.write_int32(slotobject2[2])
 
     def read(self):
-        self.time = self.readInt32()
-        self.location = (self.readFloat(), self.readFloat())
-        self.slotobject1 = (self.readInt32(), self.readByte(), self.readInt32())
-        self.slotobject2 = (self.readInt32(), self.readByte(), self.readInt32())
+        self.time = self.read_int32()
+        self.location = (self.read_float(), self.read_float())
+        self.slotobject1 = (self.read_int32(), self.read_byte(), self.read_int32())
+        self.slotobject2 = (self.read_int32(), self.read_byte(), self.read_int32())
         return self.time, self.location, self.slotobject1, self.slotobject2
 
 
@@ -377,10 +377,10 @@ class JoinGuildPacket(Packet.Packet):
         self.guildName = ''
 
     def write(self, guildName):
-        self.writeString(guildName)
+        self.write_string(guildName)
 
     def read(self):
-        self.guildName = self.readString()
+        self.guildName = self.read_string()
         return self.guildName
 
 
@@ -390,10 +390,10 @@ class KeyInfoRequestPacket(Packet.Packet):
         self.Request = []
 
     def write(self, request):
-        self.writeBytearray(request)
+        self.write_bytearray(request)
 
     def read(self):
-        self.Request = self.readBytearray()
+        self.Request = self.read_bytearray()
 
 
 class LeaveArenaPacket(Packet.Packet):
@@ -402,10 +402,10 @@ class LeaveArenaPacket(Packet.Packet):
         self.time = 0
 
     def write(self, time):
-        self.writeInt32(time)
+        self.write_int32(time)
 
     def read(self):
-        self.time = self.readInt32()
+        self.time = self.read_int32()
         return self.time
 
 
@@ -416,12 +416,12 @@ class LoadPacket(Packet.Packet):
         self.isfromArena = None
 
     def write(self, characterid, isfromarena):
-        self.writeInt32(characterid)
-        self.writeBoolean(isfromarena)
+        self.write_int32(characterid)
+        self.write_boolean(isfromarena)
 
     def read(self):
-        self.characterId = self.readInt32()
-        self.isfromArena = self.readBoolean()
+        self.characterId = self.read_int32()
+        self.isfromArena = self.read_boolean()
         return self.characterId, self.isfromArena
 
 
@@ -434,29 +434,29 @@ class MovePacket(Packet.Packet):
         self.Records = []
 
     def write(self, tickid, time, newposition, records):
-        self.writeInt32(tickid)
-        self.writeInt32(time)
-        self.writeFloat(newposition[0])
-        self.writeFloat(newposition[1])
+        self.write_int32(tickid)
+        self.write_int32(time)
+        self.write_float(newposition[0])
+        self.write_float(newposition[1])
         length = 0
-        self.writeInt16(0)
+        self.write_int16(0)
         if length == 0:
             return
         else:
             for record in records:
-                self.writeInt32(record)
+                self.write_int32(record)
 
     def read(self):
-        self.tickId = self.readInt32()
-        self.time = self.readInt32()
-        self.NewPostion = (self.readFloat(), self.readFloat())
-        length = self.readInt16()
+        self.tickId = self.read_int32()
+        self.time = self.read_int32()
+        self.NewPostion = (self.read_float(), self.read_float())
+        length = self.read_int16()
         if length == 0:
             self.Records = []
         else:
             try:
                 for _ in range(length):
-                    self.Records.append(self.readInt32())
+                    self.Records.append(self.read_int32())
             except Exception as e:
                 print(e)
         return self.tickId, self.time, self.NewPostion,
@@ -471,16 +471,16 @@ class OtherHitPacket(Packet.Packet):
         self.targetId = 0
 
     def write(self, time, bulletid, objectid, targetid):
-        self.writeInt32(time)
-        self.writeByte(bulletid)
-        self.writeInt32(objectid)
-        self.writeInt32(targetid)
+        self.write_int32(time)
+        self.write_byte(bulletid)
+        self.write_int32(objectid)
+        self.write_int32(targetid)
 
     def read(self):
-        self.time = self.readInt32()
-        self.bulletId = self.readByte()
-        self.objectId = self.readInt32()
-        self.targetId = self.readInt32()
+        self.time = self.read_int32()
+        self.bulletId = self.read_byte()
+        self.objectId = self.read_int32()
+        self.targetId = self.read_int32()
         return self.time, self.bulletId, self.objectId, self.targetId
 
 
@@ -492,12 +492,12 @@ class PetCommandPacket(Packet.Packet):
         self.petId = 0
 
     def write(self, command, petid):
-        self.writeByte(self.commands.get(command))
-        self.writeInt32(petid)
+        self.write_byte(self.commands.get(command))
+        self.write_int32(petid)
 
     def read(self):
-        self.commandId = self.readByte()
-        self.petId = self.readInt32()
+        self.commandId = self.read_byte()
+        self.petId = self.read_int32()
         return self.commandId, self.petId
 
 
@@ -513,22 +513,22 @@ class PetYardCommandPacket(Packet.Packet):
         self.currency = ''
 
     def write(self, command, petId1, petId2, objectId, slotobject, currency):
-        self.writeByte(self.commands.get(command))
-        self.writeInt32(petId1)
-        self.writeInt32(petId2)
-        self.writeInt32(objectId)
-        self.writeInt32(slotobject[0])
-        self.writeByte(slotobject[1])
-        self.writeInt32(slotobject[2])
-        self.writeByte(currency)
+        self.write_byte(self.commands.get(command))
+        self.write_int32(petId1)
+        self.write_int32(petId2)
+        self.write_int32(objectId)
+        self.write_int32(slotobject[0])
+        self.write_byte(slotobject[1])
+        self.write_int32(slotobject[2])
+        self.write_byte(currency)
 
     def read(self):
-        self.commandId = self.readByte()
-        self.petId1 = self.readInt32()
-        self.petId2 = self.readInt32()
-        self.objectId = self.readInt32()
-        self.slotobject = (self.readInt32(), self.readByte(), self.readInt32())
-        self.currency = self.readByte()
+        self.commandId = self.read_byte()
+        self.petId1 = self.read_int32()
+        self.petId2 = self.read_int32()
+        self.objectId = self.read_int32()
+        self.slotobject = (self.read_int32(), self.read_byte(), self.read_int32())
+        self.currency = self.read_byte()
         return self.commandId, self.petId1, self.petId2, self.objectId, self.slotobject, self.currency
 
 
@@ -539,12 +539,12 @@ class PlayerHitPacket(Packet.Packet):
         self.objectId = 0
 
     def write(self, bulletid, objectid):
-        self.writeByte(bulletid)
-        self.writeInt32(objectid)
+        self.write_byte(bulletid)
+        self.write_int32(objectid)
 
     def read(self):
-        self.bulletId = self.readByte()
-        self.objectId = self.readInt32()
+        self.bulletId = self.read_byte()
+        self.objectId = self.read_int32()
         return self.bulletId, self.objectId
 
 
@@ -558,19 +558,19 @@ class PlayerShootPacket(Packet.Packet):
         self.angle = 0.0
 
     def write(self, time, bulletId, containerType, position, angle):
-        self.writeInt32(time)
-        self.writeByte(bulletId)
-        self.writeInt16(containerType)
-        self.writeFloat(position[0])
-        self.writeFloat(position[1])
-        self.writeFloat(angle)
+        self.write_int32(time)
+        self.write_byte(bulletId)
+        self.write_int16(containerType)
+        self.write_float(position[0])
+        self.write_float(position[1])
+        self.write_float(angle)
 
     def read(self):
-        self.time = self.readInt32()
-        self.bulletId = self.readByte()
-        self.containerType = self.readInt16()
-        self.position = (self.readFloat(), self.readFloat())
-        self.angle = self.readFloat()
+        self.time = self.read_int32()
+        self.bulletId = self.read_byte()
+        self.containerType = self.read_int16()
+        self.position = (self.read_float(), self.read_float())
+        self.angle = self.read_float()
         return self.time, self.bulletId, self.containerType, self.position, self.angle
 
 
@@ -580,10 +580,10 @@ class PlayerTextPacket(Packet.Packet):
         self.text = ''
 
     def write(self, text):
-        self.writeString(text)
+        self.write_string(text)
 
     def read(self):
-        self.text = self.readString()
+        self.text = self.read_string()
         return self.text
 
 
@@ -594,12 +594,12 @@ class PongPacket(Packet.Packet):
         self.serial = 0
 
     def write(self, time, serial):
-        self.writeInt32(time)
-        self.writeInt32(serial)
+        self.write_int32(time)
+        self.write_int32(serial)
 
     def read(self):
-        self.time = self.readInt32()
-        self.serial = self.readInt32()
+        self.time = self.read_int32()
+        self.serial = self.read_int32()
         return self.time, self.serial
 
 
@@ -609,10 +609,10 @@ class RequestTradePacket(Packet.Packet):
         self.name = ''
 
     def write(self, name):
-        self.writeString(name)
+        self.write_string(name)
 
     def read(self):
-        self.name = self.readString()
+        self.name = self.read_string()
         return self.name
 
 
@@ -622,10 +622,10 @@ class ReskinPacket(Packet.Packet):
         self.skinId = 0
 
     def write(self, skinid):
-        self.writeInt32(skinid)
+        self.write_int32(skinid)
 
     def read(self):
-        self.skinId = self.readInt32()
+        self.skinId = self.read_int32()
         return self.skinId
 
 
@@ -636,14 +636,14 @@ class ReskinPetPacket(Packet.Packet):
         self.item = ()
 
     def write(self, newpettype, item):
-        self.writeInt32(newpettype)
-        self.writeInt32(item[0])
-        self.writeByte(item[1])
-        self.writeInt32(item[2])
+        self.write_int32(newpettype)
+        self.write_int32(item[0])
+        self.write_byte(item[1])
+        self.write_int32(item[2])
 
     def read(self):
-        self.newpetType = self.readInt32()
-        self.item = (self.readInt32(), self.readByte(), self.readInt32())
+        self.newpetType = self.read_int32()
+        self.item = (self.read_int32(), self.read_byte(), self.read_int32())
         return self.newpetType, self.item
 
 
@@ -654,12 +654,12 @@ class SetConditionPacket(Packet.Packet):
         self.conditionDuration = 0.0
 
     def write(self, effect, duration):
-        self.writeByte(effect)
-        self.writeInt16(duration)
+        self.write_byte(effect)
+        self.write_int16(duration)
 
     def read(self):
-        self.conditionEffect = self.readByte()
-        self.conditionDuration = self.readInt16()
+        self.conditionEffect = self.read_byte()
+        self.conditionDuration = self.read_int16()
         return self.conditionEffect, self.conditionDuration
 
 
@@ -669,10 +669,10 @@ class ShootAckPacket(Packet.Packet):
         self.time = 0
 
     def write(self, time):
-        self.writeInt32(time)
+        self.write_int32(time)
 
     def read(self):
-        self.time = self.readInt32()
+        self.time = self.read_int32()
         return self.time
 
 
@@ -684,14 +684,14 @@ class SquareHitPacket(Packet.Packet):
         self.objectId = 0
 
     def write(self, time, bulletid, objectid):
-        self.writeInt32(time)
-        self.writeByte(bulletid)
-        self.writeInt32(objectid)
+        self.write_int32(time)
+        self.write_byte(bulletid)
+        self.write_int32(objectid)
 
     def read(self):
-        self.time = self.readInt32()
-        self.bulletid = self.readByte()
-        self.objectid = self.readInt32()
+        self.time = self.read_int32()
+        self.bulletid = self.read_byte()
+        self.objectid = self.read_int32()
         return self.time, self.bulletid, self.objectid
 
 
@@ -701,10 +701,10 @@ class TeleportPacket(Packet.Packet):
         self.objectId = 0
 
     def write(self, objectid):
-        self.writeInt32(objectid)
+        self.write_int32(objectid)
 
     def read(self):
-        self.objectId = self.readInt32()
+        self.objectId = self.read_int32()
         return self.objectId
 
 
@@ -714,12 +714,12 @@ class TinkerQuestPacket(Packet.Packet):
         self.slot = ()
 
     def write(self, slot):
-        self.writeInt32(slot[0])
-        self.writeByte(slot[1])
-        self.writeInt32(slot[2])
+        self.write_int32(slot[0])
+        self.write_byte(slot[1])
+        self.write_int32(slot[2])
 
     def read(self):
-        self.slot = (self.readInt32(), self.readByte(), self.readInt32())
+        self.slot = (self.read_int32(), self.read_byte(), self.read_int32())
         return self.slot
 
 
@@ -744,19 +744,19 @@ class UseItemPacket(Packet.Packet):
         self.useType = ''
 
     def write(self, time, slotObject, itemUsePos, useType):
-        self.writeInt32(time)
-        self.writeInt32(slotObject[0])
-        self.writeByte(slotObject[1])
-        self.writeInt32(slotObject[2])
-        self.writeFloat(itemUsePos[0])
-        self.writeFloat(itemUsePos[1])
-        self.writeByte(useType)
+        self.write_int32(time)
+        self.write_int32(slotObject[0])
+        self.write_byte(slotObject[1])
+        self.write_int32(slotObject[2])
+        self.write_float(itemUsePos[0])
+        self.write_float(itemUsePos[1])
+        self.write_byte(useType)
 
     def read(self):
-        self.time = self.readInt32()
-        self.slotObject = (self.readInt32(), self.readByte(), self.readInt32())
-        self.itemUsePos = (self.readFloat(), self.readFloat())
-        self.useType = self.readByte()
+        self.time = self.read_int32()
+        self.slotObject = (self.read_int32(), self.read_byte(), self.read_int32())
+        self.itemUsePos = (self.read_float(), self.read_float())
+        self.useType = self.read_byte()
         return self.time, self.slotObject, self.itemUsePos, self.useType
 
 
@@ -766,10 +766,10 @@ class UsePortal(Packet.Packet):
         self.objectid = 0
 
     def write(self, objectid):
-        self.writeInt32(objectid)
+        self.write_int32(objectid)
 
     def read(self):
-        self.objectid = self.readInt32()
+        self.objectid = self.read_int32()
 
 
 class ViewQuestsPacket(Packet.Packet):
@@ -789,19 +789,19 @@ class TextPacket(Packet.Packet):
         super(TextPacket, self).__init__()
 
     def write(self, name, objectid, numstars, bubbletime, recipient, text, cleantext):
-        self.writeString(name)
-        self.writeInt32(objectid)
-        self.writeInt32(numstars)
-        self.writeByte(chr(bubbletime))
-        self.writeString(recipient)
-        self.writeString(text)
-        self.writeString(cleantext)
+        self.write_string(name)
+        self.write_int32(objectid)
+        self.write_int32(numstars)
+        self.write_byte(chr(bubbletime))
+        self.write_string(recipient)
+        self.write_string(text)
+        self.write_string(cleantext)
 
     def read(self):
         return (
-            self.readString(), self.readInt32(), self.readInt32(), self.readByte(), self.readString(),
-            self.readString(),
-            self.readString())
+            self.read_string(), self.read_int32(), self.read_int32(), self.read_byte(), self.read_string(),
+            self.read_string(),
+            self.read_string())
 
 
 class AccountListPacket(Packet.Packet):
@@ -812,14 +812,14 @@ class AccountListPacket(Packet.Packet):
         self.LockAction = 0
 
     def write(self, accountlistid, accountids, lockaction):
-        self.writeInt32(accountlistid)
-        self.writeString(accountids)
-        self.writeInt32(lockaction)
+        self.write_int32(accountlistid)
+        self.write_string(accountids)
+        self.write_int32(lockaction)
 
     def read(self):
-        self.AccountListId = self.readInt32()
-        self.AccountIds = self.readString()
-        self.LockAction = self.readInt32()
+        self.AccountListId = self.read_int32()
+        self.AccountIds = self.read_string()
+        self.LockAction = self.read_int32()
         return self.AccountListId, self.AccountIds, self.LockAction
 
 
@@ -832,16 +832,16 @@ class AllyShootPacket(Packet.Packet):
         self.Angle = 0.0
 
     def write(self, bulletid, ownerid, containertype, angle):
-        self.writeByte(bulletid)
-        self.writeInt32(ownerid)
-        self.writeInt16(containertype)
-        self.writeFloat(angle)
+        self.write_byte(bulletid)
+        self.write_int32(ownerid)
+        self.write_int16(containertype)
+        self.write_float(angle)
 
     def read(self):
-        self.BulletId = self.readByte()
-        self.OwnerId = self.readInt32()
-        self.ContainerType = self.readInt16()
-        self.Angle = self.readFloat()
+        self.BulletId = self.read_byte()
+        self.OwnerId = self.read_int32()
+        self.ContainerType = self.read_int16()
+        self.Angle = self.read_float()
         return self.BulletId, self.OwnerId, self.ContainerType, self.Angle
 
 
@@ -857,23 +857,23 @@ class AoEPacket(Packet.Packet):
         self.color = 0
 
     def write(self, location, radius, damage, effects, effectduration, orgintype, color):
-        self.writeFloat(location[0])
-        self.writeFloat(location[1])
-        self.writeFloat(radius)
-        self.writeUInt16(damage)
-        self.writeByte(effects)
-        self.writeFloat(effectduration)
-        self.writeInt16(orgintype)
-        self.writeInt32(color)
+        self.write_float(location[0])
+        self.write_float(location[1])
+        self.write_float(radius)
+        self.write_uint16(damage)
+        self.write_byte(effects)
+        self.write_float(effectduration)
+        self.write_int16(orgintype)
+        self.write_int32(color)
 
     def read(self):
-        self.location = (self.readFloat(), self.readFloat())
-        self.radius = self.readFloat()
-        self.damage = self.readUInt16()
-        self.effects = self.readByte()
-        self.effectduration = self.readFloat()
-        self.origintype = self.readInt16()
-        self.color = self.readInt32()
+        self.location = (self.read_float(), self.read_float())
+        self.radius = self.read_float()
+        self.damage = self.read_uint16()
+        self.effects = self.read_byte()
+        self.effectduration = self.read_float()
+        self.origintype = self.read_int16()
+        self.color = self.read_int32()
         return self.location, self.radius, self.damage, self.effects, self.effectduration, self.origintype, self.color
 
 
@@ -883,10 +883,10 @@ class ArenaDeathPacket(Packet.Packet):
         self.restartprice = 0
 
     def write(self, restartprice):
-        self.writeInt32(restartprice)
+        self.write_int32(restartprice)
 
     def read(self):
-        self.restartprice = self.readInt32()
+        self.restartprice = self.read_int32()
 
 
 class ArenaNextWavePacket(Packet.Packet):
@@ -895,10 +895,10 @@ class ArenaNextWavePacket(Packet.Packet):
         self.typeid = 0
 
     def write(self, typeid):
-        self.writeInt32(typeid)
+        self.write_int32(typeid)
 
     def read(self):
-        self.typeid = self.readInt32()
+        self.typeid = self.read_int32()
         return self.typeid
 
 
@@ -909,12 +909,12 @@ class BuyResultPacket(Packet.Packet):
         self.message = ''
 
     def write(self, result, message):
-        self.writeInt32(result)
-        self.writeString(message)
+        self.write_int32(result)
+        self.write_string(message)
 
     def read(self):
-        self.result = self.readInt32()
-        self.message = self.readString()
+        self.result = self.read_int32()
+        self.message = self.read_string()
         return self.result, self.message
 
 
@@ -925,12 +925,12 @@ class ClientStatPacket(Packet.Packet):
         self.value = 0
 
     def write(self, name, value):
-        self.writeString(name)
-        self.writeInt32(value)
+        self.write_string(name)
+        self.write_int32(value)
 
     def read(self):
-        self.name = self.readString()
-        self.value = self.readInt32()
+        self.name = self.read_string()
+        self.value = self.read_int32()
         return self.name, self.value
 
 
@@ -941,12 +941,12 @@ class CreateGuildResultPacket(Packet.Packet):
         self.errorText = ''
 
     def write(self, success, errortext):
-        self.writeBoolean(success)
-        self.writeString(errortext)
+        self.write_boolean(success)
+        self.write_string(errortext)
 
     def read(self):
-        self.success = self.readBoolean()
-        self.errorText = self.readString()
+        self.success = self.read_boolean()
+        self.errorText = self.read_string()
         return self.success, self.errorText
 
 
@@ -957,12 +957,12 @@ class CreateSuccessPacket(Packet.Packet):
         self.objectId = 0
 
     def write(self, objectid, charId):
-        self.writeInt32(objectid)
-        self.writeInt32(charId)
+        self.write_int32(objectid)
+        self.write_int32(charId)
 
     def read(self):
-        self.objectId = self.readInt32()
-        self.charId = self.readInt32()
+        self.objectId = self.read_int32()
+        self.charId = self.read_int32()
         return self.objectId, self.charId
 
 
@@ -987,18 +987,18 @@ class DeathPacket(Packet.Packet):
         self.zombieid = 0
 
     def write(self, accountid, charid, killedby, zombietype, zombieid):
-        self.writeString(accountid)
-        self.writeInt32(charid)
-        self.writeString(killedby)
-        self.writeInt32(zombietype)
-        self.writeInt32(zombieid)
+        self.write_string(accountid)
+        self.write_int32(charid)
+        self.write_string(killedby)
+        self.write_int32(zombietype)
+        self.write_int32(zombieid)
 
     def read(self):
-        self.accountid = self.readString()
-        self.charid = self.readInt32()
-        self.killedby = self.readString()
-        self.zombietype = self.readInt32()
-        self.zombieid = self.readInt32()
+        self.accountid = self.read_string()
+        self.charid = self.read_int32()
+        self.killedby = self.read_string()
+        self.zombietype = self.read_int32()
+        self.zombieid = self.read_int32()
         return self.accountid, self.charid, self.killedby, self.zombietype, self.zombieid
 
 
@@ -1014,12 +1014,12 @@ class FailurePacket(Packet.Packet):
         self.ErrorMessage = ''
 
     def write(self, errorid, errormessage):
-        self.writeInt32(errorid)
-        self.writeString(errormessage)
+        self.write_int32(errorid)
+        self.write_string(errormessage)
 
     def read(self):
-        self.ErrorId = self.readInt32()
-        self.ErrorMessage = self.readString()
+        self.ErrorId = self.read_int32()
+        self.ErrorMessage = self.read_string()
         return self.ErrorId, self.ErrorMessage
 
 
@@ -1031,14 +1031,14 @@ class NewTickPacket(Packet.Packet):
         self.Statuses = []
 
     def write(self, tickid, ticktime, statuses):
-        self.writeInt32(tickid)
-        self.writeInt32(ticktime)
-        self.writeBytearray(statuses)
+        self.write_int32(tickid)
+        self.write_int32(ticktime)
+        self.write_bytearray(statuses)
 
     def read(self):
-        self.TickId = self.readInt32()
-        self.TickTime = self.readInt32()
-        self.Statuses = self.readBytearray()
+        self.TickId = self.read_int32()
+        self.TickTime = self.read_int32()
+        self.Statuses = self.read_bytearray()
         return self.TickId, self.TickTime, self.Statuses
 
 
@@ -1049,12 +1049,12 @@ class FilePacket(Packet.Packet):
         self.bytes = []
 
     def write(self, name, bytes):
-        self.writeString(name)
-        self.writeBytearray(bytes)
+        self.write_string(name)
+        self.write_bytearray(bytes)
 
     def read(self):
-        self.name = self.readString()
-        self.bytes = self.readBytearray()
+        self.name = self.read_string()
+        self.bytes = self.read_bytearray()
         return self.name, self.bytes
 
 
@@ -1065,12 +1065,12 @@ class GlobalNotificationPacket(Packet.Packet):
         self.text = ''
 
     def write(self, typeid, text):
-        self.writeInt32(typeid)
-        self.writeString(text)
+        self.write_int32(typeid)
+        self.write_string(text)
 
     def read(self):
-        self.typeId = self.readInt32()
-        self.text = self.readString()
+        self.typeId = self.read_int32()
+        self.text = self.read_string()
 
 
 class NotificationPacket(Packet.Packet):
@@ -1081,14 +1081,14 @@ class NotificationPacket(Packet.Packet):
         self.color = 0
 
     def write(self, objectId, message, color):
-        self.writeInt32(objectId)
-        self.writeString(json.dumps({'key': 'blank', 'tokens': {'data': message}}))
-        self.writeInt32(color)
+        self.write_int32(objectId)
+        self.write_string(json.dumps({'key': 'blank', 'tokens': {'data': message}}))
+        self.write_int32(color)
 
     def read(self):
-        self.objectId = self.readInt32()
-        self.message = json.loads(self.readString())
-        self.color = self.readInt32()
+        self.objectId = self.read_int32()
+        self.message = json.loads(self.read_string())
+        self.color = self.read_int32()
         return self.objectId, self.message, self.color
 
 
@@ -1099,13 +1099,13 @@ class GotoPacket(Packet.Packet):
         self.location = ()
 
     def write(self, objectId, location):
-        self.writeInt32(objectId)
-        self.writeFloat(location[0])
-        self.writeFloat(location[1])
+        self.write_int32(objectId)
+        self.write_float(location[0])
+        self.write_float(location[1])
 
     def read(self):
-        self.objectId = self.readInt32()
-        self.location = (self.readFloat(), self.readFloat())
+        self.objectId = self.read_int32()
+        self.location = (self.read_float(), self.read_float())
         return self.objectId, self.location
 
 
@@ -1116,12 +1116,12 @@ class HatchEggPacket(Packet.Packet):
         self.petSkinId = 0
 
     def write(self, name, skinId):
-        self.writeString(name)
-        self.writeInt32(skinId)
+        self.write_string(name)
+        self.write_int32(skinId)
 
     def read(self):
-        self.petName = self.readString()
-        self.petSkinId = self.readInt32()
+        self.petName = self.read_string()
+        self.petSkinId = self.read_int32()
         return self.petName, self.petSkinId
 
 
@@ -1131,10 +1131,10 @@ class InvResultPacket(Packet.Packet):
         self.result = 0
 
     def write(self, result):
-        self.writeInt32(result)
+        self.write_int32(result)
 
     def read(self):
-        self.result = self.readInt32()
+        self.result = self.read_int32()
         return self.result
 
 
@@ -1145,12 +1145,12 @@ class InvitedToGuildPacket(Packet.Packet):
         self.guildName = ''
 
     def write(self, name, guildname):
-        self.writeString(name)
-        self.writeString(guildname)
+        self.write_string(name)
+        self.write_string(guildname)
 
     def read(self):
-        self.name = self.readString()
-        self.guildName = self.readString()
+        self.name = self.read_string()
+        self.guildName = self.read_string()
         return self.name, self.guildName
 
 
@@ -1160,10 +1160,10 @@ class KeyInfoResponsePacket(Packet.Packet):
         self.response = []
 
     def write(self, response):
-        self.writeBytearray(response)
+        self.write_bytearray(response)
 
     def read(self):
-        self.response = self.readBytearray()
+        self.response = self.read_bytearray()
         return self.response
 
 
@@ -1180,24 +1180,24 @@ class ReconnectPacket(Packet.Packet):
         self.key = []
 
     def write(self, name, host, stats, port, gameid, keytime, isfromarena, key):
-        self.writeString(name)
-        self.writeString(host)
-        self.writeString(stats)
-        self.writeInt32(port)
-        self.writeInt32(gameid)
-        self.writeInt32(keytime)
-        self.writeBoolean(isfromarena)
-        self.writeBytearray(key)
+        self.write_string(name)
+        self.write_string(host)
+        self.write_string(stats)
+        self.write_int32(port)
+        self.write_int32(gameid)
+        self.write_int32(keytime)
+        self.write_boolean(isfromarena)
+        self.write_bytearray(key)
 
     def read(self):
-        self.name = self.readString()
-        self.host = self.readString()
-        self.stats = self.readString()
-        self.port = self.readInt32()
-        self.gameid = self.readInt32()
-        self.keytime = self.readInt32()
-        self.isfromarena = self.readBoolean()
-        self.key = self.readBytearray()
+        self.name = self.read_string()
+        self.host = self.read_string()
+        self.stats = self.read_string()
+        self.port = self.read_int32()
+        self.gameid = self.read_int32()
+        self.keytime = self.read_int32()
+        self.isfromarena = self.read_boolean()
+        self.key = self.read_bytearray()
         return self.name, self.host, self.stats, self.port, self.gameid, self.keytime, self.isfromarena, self.key
 
 
@@ -1218,30 +1218,30 @@ class MapInfoPacket(Packet.Packet):
 
     def write(self, width, height, name, displayName, fp, background, difficulty, allowPlayerTeleport, showDisplays,
               clientXML, extraXML):
-        self.writeInt32(width)
-        self.writeInt32(height)
-        self.writeString(name)
-        self.writeString(displayName)
-        self.writeUInt32(fp)
-        self.writeInt32(background)
-        self.writeInt32(difficulty)
-        self.writeBoolean(allowPlayerTeleport)
-        self.writeBoolean(showDisplays)
-        self.writeString(clientXML)
-        self.writeString(extraXML)
+        self.write_int32(width)
+        self.write_int32(height)
+        self.write_string(name)
+        self.write_string(displayName)
+        self.write_uint32(fp)
+        self.write_int32(background)
+        self.write_int32(difficulty)
+        self.write_boolean(allowPlayerTeleport)
+        self.write_boolean(showDisplays)
+        self.write_string(clientXML)
+        self.write_string(extraXML)
 
     def read(self):
-        self.width = self.readInt32()
-        self.height = self.readInt32()
-        self.name = self.readString()
-        self.displayName = self.readString()
-        self.fp = self.readUInt32()
-        self.background = self.readInt32()
-        self.difficulty = self.readInt32()
-        self.allowPlayerTeleport = self.readBoolean()
-        self.showDisplays = self.readBoolean()
-        self.clientXML = self.readString()
-        self.extraXML = self.readString()
+        self.width = self.read_int32()
+        self.height = self.read_int32()
+        self.name = self.read_string()
+        self.displayName = self.read_string()
+        self.fp = self.read_uint32()
+        self.background = self.read_int32()
+        self.difficulty = self.read_int32()
+        self.allowPlayerTeleport = self.read_boolean()
+        self.showDisplays = self.read_boolean()
+        self.clientXML = self.read_string()
+        self.extraXML = self.read_string()
         return self.width, self.height, self.name, self.displayName, self.fp, self.background, self.difficulty, self.allowPlayerTeleport, self.showDisplays, self.clientXML, self.extraXML
 
 

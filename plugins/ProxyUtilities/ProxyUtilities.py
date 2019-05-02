@@ -14,29 +14,30 @@ class ProxyUtilities:
         self._client = client
         self._proxy = proxy
         self.objectId = 0
-        client.hook_packet(Packets.HelloPacket, self.onHello)
-        client.hook_packet(Packets.CreateSuccessPacket, self.onCreateSuccess)
-        client.hook_packet(Packets.ReconnectPacket, self.onReconnect)
-        client.hook_packet(Packets.FailurePacket, self.onFailure)
-        client.hook_command("reload", self.reloadPlugins)
-        client.hook_command("plugintest", self.sendTest)
+        client.hook_packet(Packets.HelloPacket, self.on_hello)
+        client.hook_packet(Packets.CreateSuccessPacket, self.on_create_success)
+        client.hook_packet(Packets.ReconnectPacket, self.on_reconnect)
+        client.hook_packet(Packets.FailurePacket, self.on_failure)
+        client.hook_command("reload", self.reload_plugins)
+        client.hook_command("plugintest", self.send_test)
 
-    def sendTest(self, args):
+    def send_test(self, args):
         packet = Packets.NotificationPacket()
         packet.write(self.objectId, "Ran plugin test.", 0x8B00FF)
         self._client.send_to_client(packet)
 
-    def reloadPlugins(self, args):
-        self._proxy.loadPlugins()
-        newPacket = Packets.NotificationPacket()
-        newPacket.write(self.objectId, "Plugins reloaded.", 0x8B00FF)
-        self._client.send_to_client(newPacket)
+    def reload_plugins(self, args):
+        self._client.load_plugins()
+        new_packet = Packets.NotificationPacket()
+        new_packet.write(self.objectId, "Plugins reloaded.", 0x8B00FF)
+        self._client.send_to_client(new_packet)
 
-    def onFailure(self, packet: Packets.FailurePacket):
+    @staticmethod
+    def on_failure(packet: Packets.FailurePacket):
         data = packet.read()
         print(data)
 
-    def onHello(self, packet: Packets.HelloPacket):
+    def on_hello(self, packet: Packets.HelloPacket):
         data = packet.read()
 
         if len(packet.key) != 0:
@@ -55,7 +56,7 @@ class ProxyUtilities:
             self._client.state = s
             self._proxy.states[guid] = s
 
-    def onReconnect(self, packet: Packets.ReconnectPacket):
+    def on_reconnect(self, packet: Packets.ReconnectPacket):
         packet.send = False
         packet.read()
         new_packet = Packets.ReconnectPacket()
@@ -71,9 +72,9 @@ class ProxyUtilities:
         self._client.send_to_client(new_packet)
         self._client.restart_client()
 
-    def onCreateSuccess(self, packet: Packets.CreateSuccessPacket):
+    def on_create_success(self, packet: Packets.CreateSuccessPacket):
         data = packet.read()
         self.objectId = data[0]
-        newPacket = Packets.NotificationPacket()
-        newPacket.write(self.objectId, "Welcome to PyRelay!", 0x8B00FF)
-        threading.Timer(1.5, self._client.send_to_client, args=(newPacket,)).start()
+        new_packet = Packets.NotificationPacket()
+        new_packet.write(self.objectId, "Welcome to PyRelay!", 0x8B00FF)
+        threading.Timer(1.5, self._client.send_to_client, args=(new_packet,)).start()

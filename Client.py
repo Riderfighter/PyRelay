@@ -37,15 +37,15 @@ class Client:
         self.arc4_encrypt_out_cipher = ARC4.new(binascii.unhexlify(self.outgoing))
         self.load_plugins()
 
-    def hook_packet(self, packet: Packet.Packet, callback):
+    def hook_packet(self, hooked_packet: Packet.Packet, callback):
         """
-        :param packet: The non-initialized packet you'd like to hook.
+        :param hooked_packet: The non-initialized packet you'd like to hook.
         :param callback: The non-initialized callback function.
         """
-        if self._packetHooks.get(packet.__name__):
-            self._packetHooks[packet.__name__].append(callback)
+        if self._packetHooks.get(hooked_packet.__name__):
+            self._packetHooks[hooked_packet.__name__].append(callback)
         else:
-            self._packetHooks[packet.__name__] = [callback]
+            self._packetHooks[hooked_packet.__name__] = [callback]
 
     def hook_command(self, command, callback):
         if command in self._commandHooks:
@@ -71,12 +71,12 @@ class Client:
         return self._state
 
     @state.setter
-    def state(self, state: State) -> None:
+    def state(self, new_state: state):
         if not self.server:
             self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.server.connect((state.lastServer, state.lastPort))
-            print(state.guid, "starting up")
-        self._state = state
+            self.server.connect((new_state.lastServer, new_state.lastPort))
+            print(new_state.guid, "starting up")
+        self._state = new_state
 
     def start(self):
         self.running = True
@@ -106,26 +106,26 @@ class Client:
                 header += socket2.recv(5 - len(header))
             packet_id = header[4]
             data_length = struct.unpack(">i", header[:4])[
-                              0] - 5  # minus 5 to remove the length of the header per packet
+                              0] - 5  # minus 5 to remove the length of the header per new_packet
             # This is to make sure we receive all parts of the data we want to decode/send to the server.
             while len(header[5:]) != data_length:
                 header += socket2.recv(data_length - len(header[5:]))
             if from_client:
                 decoded_data = self.arc4_decrypt_out_cipher.decrypt(header[5:])
                 if self.packetPointers.get(packet_id):
-                    packet = self.packetPointers.get(packet_id)()
-                    packet.data.extend(decoded_data)
-                    self.process_client_packet(packet)
-                    if not packet.send:
+                    new_packet = self.packetPointers.get(packet_id)()
+                    new_packet.data.extend(decoded_data)
+                    self.process_client_packet(new_packet)
+                    if not new_packet.send:
                         return
                 header = header[:5] + self.arc4_encrypt_out_cipher.encrypt(decoded_data)
             else:
                 decoded_data = self.arc4_decrypt_in_cipher.decrypt(header[5:])
                 if self.packetPointers.get(packet_id):
-                    packet = self.packetPointers.get(packet_id)()
-                    packet.data.extend(decoded_data)
-                    self.process_server_packet(packet)
-                    if not packet.send:
+                    new_packet = self.packetPointers.get(packet_id)()
+                    new_packet.data.extend(decoded_data)
+                    self.process_server_packet(new_packet)
+                    if not new_packet.send:
                         return
                 header = header[:5] + self.arc4_encrypt_in_cipher.encrypt(decoded_data)
             socket1 = self.server if from_client else self.client
@@ -134,11 +134,11 @@ class Client:
             print(e)
             print("Client disconnected.")
 
-    def send_packet(self, packet, for_client):
-        data = bytes(packet.data)
+    def send_packet(self, packet_to_process, for_client):
+        data = bytes(packet_to_process.data)
         packet_id = None
         for key, value in self.packetPointers.items():
-            if value and value.__name__ == packet.__class__.__name__:
+            if value and value.__name__ == packet_to_process.__class__.__name__:
                 packet_id = key
                 break
         if packet_id:
@@ -149,36 +149,36 @@ class Client:
                 header = struct.pack(">ib", len(data) + 5, packet_id) + self.arc4_encrypt_out_cipher.encrypt(data)
                 self.server.send(header)
         else:
-            print("No packet id for:", packet.__class__.__name__)
+            print("No packet_to_process id for:", packet_to_process.__class__.__name__)
 
-    def send_to_client(self, packet):
-        self.send_packet(packet, True)
+    def send_to_client(self, new_packet):
+        self.send_packet(new_packet, True)
 
-    def send_to_server(self, packet):
-        self.send_packet(packet, False)
+    def send_to_server(self, new_packet):
+        self.send_packet(new_packet, False)
 
-    def process_client_packet(self, packet):
+    def process_client_packet(self, hooked_packet):
         # Implement command hooks later
-        if packet.__class__.__name__ == "PlayerTextPacket":
-            player_text = packet.read()
+        if hooked_packet.__class__.__name__ == "PlayerTextPacket":
+            player_text = hooked_packet.read()
             if player_text.startswith("/"):
                 command_text = player_text.replace("/", "").split(" ")
                 for command in self._commandHooks:
                     if command == command_text[0]:
                         self._commandHooks[command](command_text[1:])
-                        packet.send = False
+                        hooked_packet.send = False
 
         # Should call a hooked function
         for packetName in self._packetHooks:
-            if packetName == packet.__class__.__name__:
+            if packetName == hooked_packet.__class__.__name__:
                 for callback in self._packetHooks[packetName]:
-                    callback(packet)
+                    callback(hooked_packet)
 
-    def process_server_packet(self, packet):
+    def process_server_packet(self, packet_to_process):
         for packetName in self._packetHooks:
-            if packetName == packet.__class__.__name__:
+            if packetName == packet_to_process.__class__.__name__:
                 for callback in self._packetHooks[packetName]:
-                    callback(packet)
+                    callback(packet_to_process)
 
     def route(self):
         # Figure out how to rebind this socket to the reconnect packets ip thing.
