@@ -1243,11 +1243,3 @@ class MapInfoPacket(Packet.Packet):
         self.clientXML = self.read_string()
         self.extraXML = self.read_string()
         return self.width, self.height, self.name, self.displayName, self.fp, self.background, self.difficulty, self.allowPlayerTeleport, self.showDisplays, self.clientXML, self.extraXML
-
-
-if __name__ == '__main__':
-    packet = HelloPacket()
-    packet.data.extend(
-        b'\x00\x07X31.6.0\xff\xff\xff\xfe\x00\xacX8hQqk2ddKUtu8jfXVQ+zFynzIlI4xmsQHk5vHCeheitMtJgO6E5UBUy13iTZWuDKg/MCBz9JRrisOkfTKQf8LHW6beXuEvFOMhZTtj8FnViIDmGotgFFt+P/ZGDQlslj6JZG223Y05KN+TIpG4UGCYGJia/pt7t6/cN698gQBI=3\xff\xd3k\x00\xacA5YUspiVh7545t0dk+ohXaQEqpmz0SV5xhC9L3nnokhHz2UhvseG7vq7TxM4IC0GTyiWjOVF/c0pmbxk64lnR91/9po0EvwCA+j90rk26ydrsFcD7ABAFN8KBCZWQ7vzdw5uUU0rDYmsZAnxoxm7Zy7gTvB46VTYTkOuiAEBbK0=\x02Lb\x89\x00\x00\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05rotmg\x00\x00\x00\x05rotmg\x00\x00\x00\x00')
-    packet.read()
-    print(packet.keyTime)
