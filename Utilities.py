@@ -1,54 +1,7 @@
-import base64
-import binascii
 import os
 import xml.etree.ElementTree as ET
 
-from Crypto.Cipher import ARC4
-from Crypto.Cipher import PKCS1_OAEP
-from Crypto.PublicKey import RSA
-
 import Packets
-
-
-class CryptoUtils:
-    """
-    Takes the client -> server key and the server -> client key in the constructer.
-    """
-    email = b""
-    password = b""
-    rsakey = None
-
-    def __init__(self, outgoing, incoming):
-        self.ARC4DecryptinCipher = ARC4.new(binascii.unhexlify(incoming))
-        self.ARC4EncryptinCipher = ARC4.new(binascii.unhexlify(incoming))
-        self.ARC4DecryptoutCipher = ARC4.new(binascii.unhexlify(outgoing))
-        self.ARC4EncryptoutCipher = ARC4.new(binascii.unhexlify(outgoing))
-
-    def RSAEncrypt(self, data):
-        key = RSA.importKey(self.rsakey)
-        cipher = PKCS1_OAEP.new(key)
-        return base64.b64encode(cipher.encrypt(data))
-
-    def RSADecrypt(self, data):
-        key = RSA.importKey(self.rsakey)
-        cipher = PKCS1_OAEP.new(key)
-        return cipher.decrypt(base64.b64decode(bytes(data, 'utf8')))
-
-    def serverOut(self, data):
-        """Decrypt server Packets"""
-        return self.ARC4DecryptinCipher.decrypt(data)
-
-    def serverIn(self, data):
-        """Encrypt server Packets"""
-        return self.ARC4EncryptinCipher.encrypt(data)
-
-    def clientOut(self, data):
-        """Decrypt client Packets"""
-        return self.ARC4DecryptoutCipher.decrypt(data)
-
-    def clientIn(self, data):
-        """Encrypt client Packets"""
-        return self.ARC4EncryptoutCipher.encrypt(data)
 
 
 class Packetsetup:

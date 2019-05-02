@@ -16,7 +16,8 @@ class Proxy(object):
     # Dont access _packetHooks/_commandHooks directly, they are considered private variables.
     states = {}
 
-    def enableSWFPROXY(self):
+    @staticmethod
+    def enable_swf_for_proxy():
         adobe_policy = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         adobe_policy.bind(('127.0.0.1', 843))
         adobe_policy.listen(1)
@@ -27,7 +28,7 @@ class Proxy(object):
                 b'<?xml version="1.0"?><!DOCTYPE cross-domain-policy SYSTEM "/xml/dtds/cross-domain-policy.dtd">  <cross-domain-policy>  <site-control permitted-cross-domain-policies="master-only"/>  <allow-access-from domain="*" to-ports="*" /></cross-domain-policy>')
             policy.close()
 
-    def enableClients(self):
+    def enable_clients(self):
         # TODO: Allow multiple clients connected to the proxy and handle each individually
         self.listener.bind(('127.0.0.1', 2050))
         self.listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -39,8 +40,8 @@ class Proxy(object):
             time.sleep(0.005)  # Don't touch this, if you do your cpu usage rises to like 99.8%
 
     def start(self):
-        threading.Thread(target=self.enableSWFPROXY).start()
-        threading.Thread(target=self.enableClients).start()
+        threading.Thread(target=self.enable_swf_for_proxy).start()
+        threading.Thread(target=self.enable_clients).start()
 
 
 if __name__ == '__main__':

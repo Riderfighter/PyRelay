@@ -15,10 +15,10 @@ import Utilities
 class Client:
     incoming = b'c79332b197f92ba85ed281a023'
     outgoing = b'6a39570cc9de4ec71d64821894'
-    ARC4DecryptinCipher = ARC4.new(binascii.unhexlify(incoming))
-    ARC4EncryptinCipher = ARC4.new(binascii.unhexlify(incoming))
-    ARC4DecryptoutCipher = ARC4.new(binascii.unhexlify(outgoing))
-    ARC4EncryptoutCipher = ARC4.new(binascii.unhexlify(outgoing))
+    arc4_decrypt_in_cipher = None
+    arc4_encrypt_in_cipher = None
+    arc4_decrypt_out_cipher = None
+    arc4_encrypt_out_cipher = None
     _state: State = None
     # crypto = Utilities.CryptoUtils(b'6a39570cc9de4ec71d64821894', b'c79332b197f92ba85ed281a023')
     packetPointers = Utilities.Packetsetup().setupPacket()
@@ -31,9 +31,13 @@ class Client:
     def __init__(self, proxy, client):
         self._proxy = proxy
         self.client = client
-        self.loadPlugins()
+        self.arc4_decrypt_in_cipher = ARC4.new(binascii.unhexlify(self.incoming))
+        self.arc4_encrypt_in_cipher = ARC4.new(binascii.unhexlify(self.incoming))
+        self.arc4_decrypt_out_cipher = ARC4.new(binascii.unhexlify(self.outgoing))
+        self.arc4_encrypt_out_cipher = ARC4.new(binascii.unhexlify(self.outgoing))
+        self.load_plugins()
 
-    def hookPacket(self, packet: Packet.Packet, callback):
+    def hook_packet(self, packet: Packet.Packet, callback):
         """
         :param packet: The non-initialized packet you'd like to hook.
         :param callback: The non-initialized callback function.
@@ -43,13 +47,13 @@ class Client:
         else:
             self._packetHooks[packet.__name__] = [callback]
 
-    def hookCommand(self, command, callback):
+    def hook_command(self, command, callback):
         if command in self._commandHooks:
             print("Command already registered. Ignoring...")
         else:
             self._commandHooks[command] = callback
 
-    def loadPlugins(self):
+    def load_plugins(self):
         if self._packetHooks or self._commandHooks:
             self._packetHooks.clear()
             self._commandHooks.clear()
@@ -67,18 +71,18 @@ class Client:
         return self._state
 
     @state.setter
-    def state(self, value: State) -> None:
+    def state(self, state: State) -> None:
         if not self.server:
             self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.server.connect((value.lastServer, value.lastPort))
-            print(value.guid, "starting up")
-        self._state = value
+            self.server.connect((state.lastServer, state.lastPort))
+            print(state.guid, "starting up")
+        self._state = state
 
     def start(self):
         self.running = True
-        self.Route()
+        self.route()
 
-    def restartClient(self):
+    def restart_client(self):
         """
         Restarts client by closing the client socket, server socket.
         """
@@ -87,76 +91,81 @@ class Client:
         self.client.close()
         self.server.close()
 
-    def readRemote(self, fromClient=True):
+    def read_remote(self, from_client=True):
         """
         sends data from socket2 to socket 1
         """
-        socket2 = self.client if fromClient else self.server
+        socket2 = self.client if from_client else self.server
         try:
             header = socket2.recv(5)  # Receives data from socket2
             if header == b'\xff':
+                self.restart_client()
                 print("Kill byte received, all hell will break loose.")
-                self.restartClient()
                 return
             while len(header) != 5:
                 header += socket2.recv(5 - len(header))
-            packetid = header[4]
-            datalength = struct.unpack(">i", header[:4])[0] - 5  # minus 5 to remove the length of the header per packet
+            packet_id = header[4]
+            data_length = struct.unpack(">i", header[:4])[
+                              0] - 5  # minus 5 to remove the length of the header per packet
             # This is to make sure we receive all parts of the data we want to decode/send to the server.
-            while len(header[5:]) != datalength:
-                header += socket2.recv(datalength - len(header[5:]))
-            if fromClient:
-                dedata = self.ARC4DecryptoutCipher.decrypt(header[5:])
-                if self.packetPointers.get(packetid):
-                    Packet = self.packetPointers.get(packetid)()
-                    Packet.data.extend(dedata)
-                    self.processClientPacket(Packet)
-                    if not Packet.send:
+            while len(header[5:]) != data_length:
+                header += socket2.recv(data_length - len(header[5:]))
+            if from_client:
+                decoded_data = self.arc4_decrypt_out_cipher.decrypt(header[5:])
+                if self.packetPointers.get(packet_id):
+                    packet = self.packetPointers.get(packet_id)()
+                    packet.data.extend(decoded_data)
+                    self.process_client_packet(packet)
+                    if not packet.send:
                         return
-                header = header[:5] + self.ARC4EncryptoutCipher.encrypt(dedata)
+                header = header[:5] + self.arc4_encrypt_out_cipher.encrypt(decoded_data)
             else:
-                dedata = self.ARC4DecryptinCipher.decrypt(header[5:])
-                if self.packetPointers.get(packetid):
-                    Packet = self.packetPointers.get(packetid)()
-                    Packet.data.extend(dedata)
-                    self.processServerPacket(Packet)
-                    if not Packet.send:
+                decoded_data = self.arc4_decrypt_in_cipher.decrypt(header[5:])
+                if self.packetPointers.get(packet_id):
+                    packet = self.packetPointers.get(packet_id)()
+                    packet.data.extend(decoded_data)
+                    self.process_server_packet(packet)
+                    if not packet.send:
                         return
-                header = header[:5] + self.ARC4EncryptinCipher.encrypt(dedata)
-            socket1 = self.server if fromClient else self.client
+                header = header[:5] + self.arc4_encrypt_in_cipher.encrypt(decoded_data)
+            socket1 = self.server if from_client else self.client
             socket1.send(header)  # Sends data from socket2 to socket1
         except OSError as e:
             print(e)
             print("Client disconnected.")
 
-    def sendPacket(self, packet, for_client):
+    def send_packet(self, packet, for_client):
         data = bytes(packet.data)
+        packet_id = None
         for key, value in self.packetPointers.items():
             if value and value.__name__ == packet.__class__.__name__:
                 packet_id = key
                 break
-        if for_client:
-            header = struct.pack(">ib", len(data) + 5, packet_id) + self.ARC4EncryptinCipher.encrypt(data)
-            self.client.send(header)
+        if packet_id:
+            if for_client:
+                header = struct.pack(">ib", len(data) + 5, packet_id) + self.arc4_encrypt_in_cipher.encrypt(data)
+                self.client.send(header)
+            else:
+                header = struct.pack(">ib", len(data) + 5, packet_id) + self.arc4_encrypt_out_cipher.encrypt(data)
+                self.server.send(header)
         else:
-            header = struct.pack(">ib", len(data) + 5, packet_id) + self.ARC4EncryptoutCipher.encrypt(data)
-            self.server.send(header)
+            print("No packet id for:", packet.__class__.__name__)
 
-    def sendToClient(self, packet):
-        self.sendPacket(packet, True)
+    def send_to_client(self, packet):
+        self.send_packet(packet, True)
 
-    def sendToServer(self, packet):
-        self.sendPacket(packet, False)
+    def send_to_server(self, packet):
+        self.send_packet(packet, False)
 
-    def processClientPacket(self, packet):
+    def process_client_packet(self, packet):
         # Implement command hooks later
         if packet.__class__.__name__ == "PlayerTextPacket":
             player_text = packet.read()
             if player_text.startswith("/"):
                 command_text = player_text.replace("/", "").split(" ")
-                for command in self._proxy._commandHooks:
+                for command in self._commandHooks:
                     if command == command_text[0]:
-                        self._proxy._commandHooks[command](command_text[1:])
+                        self._commandHooks[command](command_text[1:])
                         packet.send = False
 
         # Should call a hooked function
@@ -165,25 +174,25 @@ class Client:
                 for callback in self._packetHooks[packetName]:
                     callback(packet)
 
-    def processServerPacket(self, packet):
+    def process_server_packet(self, packet):
         for packetName in self._packetHooks:
             if packetName == packet.__class__.__name__:
                 for callback in self._packetHooks[packetName]:
                     callback(packet)
 
-    def Route(self):
+    def route(self):
         # Figure out how to rebind this socket to the reconnect packets ip thing.
         try:
             while self.running:
                 if not self.server:
-                    rlist = select.select([self.client], [], [])[0]
+                    read_list = select.select([self.client], [], [])[0]
                 else:
-                    rlist = select.select([self.client, self.server], [], [])[0]
+                    read_list = select.select([self.client, self.server], [], [])[0]
 
-                if self.client in rlist:
-                    self.readRemote(True)
-                if self.server in rlist:
-                    self.readRemote(False)
+                if self.client in read_list:
+                    self.read_remote(True)
+                if self.server in read_list:
+                    self.read_remote(False)
 
         except KeyboardInterrupt:
             self.client.close()

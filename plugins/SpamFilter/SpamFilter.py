@@ -9,7 +9,7 @@ class SpamFilter:
         self._proxy = proxy
         self.spam_to_filter = ['realmbags', 'rpgstash', 'rotmgmax', 'realmstock', 'eye of oryx', "oryxin",
                                "realm power.net", "rwtmg.com"]
-        client.hookPacket(Packets.TextPacket, self.onText)
+        client.hook_packet(Packets.TextPacket, self.onText)
 
     def onText(self, packet):
         data = packet.read()

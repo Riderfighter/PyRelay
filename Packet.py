@@ -60,7 +60,7 @@ class Packet(object):
         self.data[self.index:self.advance(2)] = d
 
     def writeByte(self, i):
-        d = struct.pack(">b", ord(i))
+        d = struct.pack(">b", i)
         self.data[self.index:self.advance(1)] = d
 
     def readByte(self):
@@ -101,30 +101,31 @@ class Packet(object):
             return d
 
     # def writeBytearray(self, bytes):
-    # 	length = len(bytes)
-    # 	self.writeInt16(length)
-    # 	if length == 0:
-    # 		return
-    # 	else:
-    # 		for i in bytes:
-    # 			self.writeByte(i)
-    def writeBytearray(self, bytez):
-        length = len(bytez)
+    #     length = len(bytes)
+    #     self.writeInt16(length)
+    #     if length == 0:
+    #         return
+    #     else:
+    #         for i in bytes:
+    #             self.writeByte(i)
+
+    def writeBytearray(self, bytes):
+        length = len(bytes)
         self.writeInt16(length)
         if length == 0:
             return
         else:
-            self.data[self.index:self.advance(length)] = bytez
+            self.data[self.index:self.advance(length)] = bytes
 
     # def readBytearray(self):
-    # 	length = self.readInt16()
-    # 	if length == 0:
-    # 		return []
-    # 	else:
-    # 		d = []
-    # 		for _ in range(length):
-    # 			d.append(self.readByte())	#convert the byte from byte type to int/String type
-    # 		return d
+    #     length = self.readInt16()
+    #     if length == 0:
+    #         return []
+    #     else:
+    #         d = []
+    #         for _ in range(length):
+    #             d.append(self.readByte())  # convert the byte from byte type to int/String type
+    #         return d
 
     def readBytearray(self):
         length = self.readInt16()
