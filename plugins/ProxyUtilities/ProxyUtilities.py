@@ -38,6 +38,12 @@ class ProxyUtilities:
         print(data)
 
     def on_hello(self, packet: Packets.HelloPacket):
+        """
+        This is really dumb I need to debug this more on why it doesn't work. I would like to use PyCharm debug mode to
+        see the stack but but I need to run with sudo and pycharm can't do that.
+
+        I'm reconsidering this IDE more and more everyday.
+        """
         data = packet.read()
 
         if len(packet.key) != 0:

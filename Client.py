@@ -20,7 +20,6 @@ class Client:
     arc4_decrypt_out_cipher = None
     arc4_encrypt_out_cipher = None
     _state: State = None
-    # crypto = Utilities.CryptoUtils(b'6a39570cc9de4ec71d64821894', b'c79332b197f92ba85ed281a023')
     packetPointers = Utilities.Packetsetup().setupPacket()
     server = None
     running = False
