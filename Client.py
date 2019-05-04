@@ -71,11 +71,11 @@ class Client:
 
     @state.setter
     def state(self, new_state: state):
+        self._state = new_state
         if not self.server:
             self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.server.connect((new_state.lastServer, new_state.lastPort))
             print(new_state.guid, "starting up")
-        self._state = new_state
 
     def start(self):
         self.running = True

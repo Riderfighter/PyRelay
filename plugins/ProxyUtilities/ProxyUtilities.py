@@ -51,7 +51,7 @@ class ProxyUtilities:
             state = self._proxy.states[packet.key.decode("utf8")]
             self._client.state = state
             new_packet = Packets.HelloPacket()
-            new_packet.write(data[0], data[1], data[2], data[3], data[4], data[5], data[6], -1,
+            new_packet.write(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7],
                              state.realConKey, data[9], data[10], data[11], data[12], data[13], data[14], data[15])
             state.realConKey = b''
             self._client.send_to_server(new_packet)

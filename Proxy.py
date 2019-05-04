@@ -9,6 +9,7 @@ import Client
 # Client.py to proxy only
 
 class Proxy(object):
+    _debug = False
     # Constant variables/classes
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     _clients = []
@@ -40,7 +41,8 @@ class Proxy(object):
             time.sleep(0.005)  # Don't touch this, if you do your cpu usage rises to like 99.8%
 
     def start(self):
-        threading.Thread(target=self.enable_swf_for_proxy).start()
+        if not self._debug:
+            threading.Thread(target=self.enable_swf_for_proxy).start()
         threading.Thread(target=self.enable_clients).start()
 
 
