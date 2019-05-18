@@ -9,10 +9,9 @@ import Client
 # Client.py to proxy only
 
 class Proxy(object):
-    _debug = False
+    _debug = True
     # Constant variables/classes
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    _clients = []
     # commonly mutated variables/classes
     # Dont access _packetHooks/_commandHooks directly, they are considered private variables.
     states = {}

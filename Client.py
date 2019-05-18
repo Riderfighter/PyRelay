@@ -75,7 +75,7 @@ class Client:
         if not self.server:
             self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.server.connect((new_state.lastServer, new_state.lastPort))
-            print(new_state.guid, "starting up")
+            print(new_state.guid, "starting up: ", self)
 
     def start(self):
         self.running = True
@@ -86,29 +86,31 @@ class Client:
         Restarts client by closing the client socket, server socket.
         """
         print("Disposing of client sockets")
-        self.running = False
-        self.client.close()
+        self.server.shutdown(1)
         self.server.close()
+        self.client.shutdown(1)
+        self.client.close()
+        self.running = False
 
     def read_remote(self, from_client=True):
         """
         sends data from socket2 to socket 1
         """
-        socket2 = self.client if from_client else self.server
+        sender = self.client if from_client else self.server
         try:
-            header = socket2.recv(5)  # Receives data from socket2
+            header = sender.recv(5)  # Receives data from socket2
             if header == b'\xff':
                 self.restart_client()
                 print("Kill byte received, all hell will break loose.")
                 return
             while len(header) != 5:
-                header += socket2.recv(5 - len(header))
+                header += sender.recv(5 - len(header))
             packet_id = header[4]
             data_length = struct.unpack(">i", header[:4])[
                               0] - 5  # minus 5 to remove the length of the header per new_packet
             # This is to make sure we receive all parts of the data we want to decode/send to the server.
             while len(header[5:]) != data_length:
-                header += socket2.recv(data_length - len(header[5:]))
+                header += sender.recv(data_length - len(header[5:]))
             if from_client:
                 decoded_data = self.arc4_decrypt_out_cipher.decrypt(header[5:])
                 if self.packetPointers.get(packet_id):
@@ -127,11 +129,10 @@ class Client:
                     if not new_packet.send:
                         return
                 header = header[:5] + self.arc4_encrypt_in_cipher.encrypt(decoded_data)
-            socket1 = self.server if from_client else self.client
-            socket1.send(header)  # Sends data from socket2 to socket1
+            receiver = self.server if from_client else self.client
+            receiver.send(header)  # Sends data from socket2 to socket1
         except OSError as e:
             print(e)
-            print("Client disconnected.")
 
     def send_packet(self, packet_to_process, for_client):
         data = bytes(packet_to_process.data)

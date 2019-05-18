@@ -114,8 +114,7 @@ class Packet(object):
         self.write_int16(length)
         if length == 0:
             return
-        else:
-            self.data[self.index:self.advance(length)] = bytes
+        self.data[self.index:self.advance(length)] = bytes
 
     # def readBytearray(self):
     #     length = self.readInt16()
@@ -131,8 +130,7 @@ class Packet(object):
         length = self.read_int16()
         if length == 0:
             return b''
-        else:
-            return bytes(self.data[self.index:self.advance(length)])
+        return bytes(self.data[self.index:self.advance(length)])
 
     def write_booleanarray(self, bytes):
         length = len(bytes)

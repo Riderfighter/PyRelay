@@ -48,12 +48,13 @@ class ProxyUtilities:
 
         if len(packet.key) != 0:
             packet.send = False
-            state = self._proxy.states[packet.key.decode("utf8")]
+            state = self._proxy.states[bytes.hex(packet.key)]
             self._client.state = state
             new_packet = Packets.HelloPacket()
             new_packet.write(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7],
-                             state.realConKey, data[9], data[10], data[11], data[12], data[13], data[14], data[15])
-            state.realConKey = b''
+                             bytes.fromhex(state.realConKey), data[9], data[10], data[11], data[12], data[13], data[14],
+                             data[15])
+            self._client.state.realConKey = ""
             self._client.send_to_server(new_packet)
         else:
             print("Generating new state")
@@ -71,10 +72,10 @@ class ProxyUtilities:
         if packet.port != -1:
             self._client.state.lastPort = packet.port
         if packet.key:
-            self._client.state.realConKey = packet.key
+            self._client.state.realConKey = bytes.hex(packet.key)
             self._client.state.realConKeyTime = packet.keytime
         new_packet.write(packet.name, "localhost", packet.stats, 2050, packet.gameid, packet.keytime,
-                         packet.isfromarena, self._client.state.guid.encode("utf8"))
+                         packet.isfromarena, bytes.fromhex(self._client.state.guid))
         self._client.send_to_client(new_packet)
         self._client.restart_client()
 
