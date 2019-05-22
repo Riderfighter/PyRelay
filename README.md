@@ -12,6 +12,7 @@
 
 > The main difference between the master branch and the dev branch is that the master branch allows you to have only one client connected but you are able to freely connect to whatever dungeon you want. The dev branch is an attempt at making the proxy support multiple clients at once and while this doesn't *exactly* work as it should you aren't able to connect to realms or vault without the whole relay crashing sadly :(
 
+> The dev branch also has a variable in `Proxy.py` which is called `_Debug` and what that does is disable the thread that requires you to sudo launch the proxy on UNIX systems. Set to `False` to have it send the adobe policy string otherwise run your own version of it to better debug.
 ---
 
 #### Todo:
