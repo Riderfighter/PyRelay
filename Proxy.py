@@ -12,6 +12,7 @@ class Proxy(object):
     _debug = True
     # Constant variables/classes
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     # commonly mutated variables/classes
     # Dont access _packetHooks/_commandHooks directly, they are considered private variables.
     states = {}
@@ -19,6 +20,7 @@ class Proxy(object):
     @staticmethod
     def enable_swf_for_proxy():
         adobe_policy = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        adobe_policy.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         adobe_policy.bind(('127.0.0.1', 843))
         adobe_policy.listen(1)
         while True:
@@ -31,7 +33,6 @@ class Proxy(object):
     def enable_clients(self):
         # TODO: Allow multiple clients connected to the proxy and handle each individually
         self.listener.bind(('127.0.0.1', 2050))
-        self.listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.listener.listen(5)
         while True:
             client, _ = self.listener.accept()
