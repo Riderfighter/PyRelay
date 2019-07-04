@@ -8,7 +8,7 @@ import Client
 # 6a39570cc9de4ec71d64821894 c79332b197f92ba85ed281a023
 # Client.py to proxy only
 
-class Proxy(object):
+class Proxy:
     _debug = True
     # Constant variables/classes
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -34,7 +34,7 @@ class Proxy(object):
         # TODO: Allow multiple clients connected to the proxy and handle each individually
         self.listener.bind(('127.0.0.1', 2050))
         self.listener.listen(5)
-        while True:
+        while True:  # While true cuz we cool and want a continuous loop to accept all the new clients
             client, _ = self.listener.accept()
             client1 = Client.Client(self, client)
             threading.Thread(target=client1.start).start()

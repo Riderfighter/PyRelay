@@ -4,7 +4,7 @@
 
 ## What is PyRelay?
 
-> PyRelay is a high preformance, modular tcp relay that can read and inject packets into clients fully written in python with limited third-party dependencies.
+> PyRelay is a high performance, modular tcp relay that can read and inject packets into clients fully written in python with limited third-party dependencies.
 
 ---
 

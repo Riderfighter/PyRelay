@@ -81,14 +81,16 @@ class Client:
         self.running = True
         self.route()
 
-    def restart_client(self):
+    def shutdown_client(self):
         """
         Restarts client by closing the client socket, server socket.
         """
         print("Disposing of client sockets")
-        self.server.shutdown(1)
+        # Momento de bruh, I had the sockets shutdown with the write flag instead of read and write
+        # Not sure if it changes anything though :/
+        self.server.shutdown(socket.SHUT_RDWR)
+        self.client.shutdown(socket.SHUT_RDWR)
         self.server.close()
-        self.client.shutdown(1)
         self.client.close()
         self.running = False
 
@@ -100,7 +102,7 @@ class Client:
         try:
             header = sender.recv(5)  # Receives data from socket2
             if header == b'\xff':
-                self.restart_client()
+                self.shutdown_client()
                 print("Kill byte received, all hell will break loose.")
                 return
             while len(header) != 5:
@@ -125,7 +127,7 @@ class Client:
                 if self.packetPointers.get(packet_id):
                     new_packet = self.packetPointers.get(packet_id)()
                     new_packet.data.extend(decoded_data)
-                    self.process_server_packet(new_packet)
+                    self.process_packet_callbacks(new_packet)
                     if not new_packet.send:
                         return
                 header = header[:5] + self.arc4_encrypt_in_cipher.encrypt(decoded_data)
@@ -169,12 +171,9 @@ class Client:
                         hooked_packet.send = False
 
         # Should call a hooked function
-        for packetName in self._packetHooks:
-            if packetName == hooked_packet.__class__.__name__:
-                for callback in self._packetHooks[packetName]:
-                    callback(hooked_packet)
+        self.process_packet_callbacks(hooked_packet)
 
-    def process_server_packet(self, packet_to_process):
+    def process_packet_callbacks(self, packet_to_process):
         for packetName in self._packetHooks:
             if packetName == packet_to_process.__class__.__name__:
                 for callback in self._packetHooks[packetName]:

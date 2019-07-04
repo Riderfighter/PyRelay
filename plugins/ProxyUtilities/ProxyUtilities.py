@@ -77,7 +77,7 @@ class ProxyUtilities:
         new_packet.write(packet.name, "localhost", packet.stats, 2050, packet.gameid, packet.keytime,
                          packet.isfromarena, bytes.fromhex(self._client.state.guid))
         self._client.send_to_client(new_packet)
-        self._client.restart_client()
+        self._client.shutdown_client()
 
     def on_create_success(self, packet: Packets.CreateSuccessPacket):
         data = packet.read()
