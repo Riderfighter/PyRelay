@@ -86,12 +86,8 @@ class Client:
         Restarts client by closing the client socket, server socket.
         """
         print("Disposing of client sockets")
-        # Momento de bruh, I had the sockets shutdown with the write flag instead of read and write
-        # Not sure if it changes anything though :/
-        self.server.shutdown(socket.SHUT_RDWR)
-        self.client.shutdown(socket.SHUT_RDWR)
-        self.server.close()
         self.client.close()
+        self.server.close()
         self.running = False
 
     def read_remote(self, from_client=True):
