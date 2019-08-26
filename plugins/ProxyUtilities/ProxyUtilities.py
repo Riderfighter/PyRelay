@@ -7,7 +7,7 @@ import Proxy
 import State
 
 
-# Basic plugin just to test the callback system
+# Basic plugin just to make a really bad reconnect system and handle my test cases
 class ProxyUtilities:
     # TODO: Handle joining realms
     def __init__(self, proxy: Proxy.Proxy, client: Client.Client):
@@ -51,8 +51,9 @@ class ProxyUtilities:
             state = self._proxy.states[bytes.hex(packet.key)]
             self._client.state = state
             new_packet = Packets.HelloPacket()
-            new_packet.write(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7],
-                             bytes.fromhex(state.realConKey), data[9], data[10], data[11], data[12], data[13], data[14],
+            conkey = bytes.fromhex(state.realConKey) if len(state.realConKey) > 0 else b""
+            new_packet.write(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], conkey, data[9],
+                             data[10], data[11], data[12], data[13], data[14],
                              data[15])
             self._client.state.realConKey = ""
             self._client.send_to_server(new_packet)

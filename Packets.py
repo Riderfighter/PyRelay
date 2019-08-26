@@ -300,7 +300,7 @@ class HelloPacket(Packet.Packet):
         self.write_int32(random2)
         self.write_string(secret)
         self.write_int32(keyTime)
-        self.write_bytearray(key)
+        self.write_bytestring(key)
         self.write_string(mapjson)
         self.write_string(entrytag)
         self.write_string(gamenet)
@@ -318,7 +318,7 @@ class HelloPacket(Packet.Packet):
         self.random2 = self.read_int32()
         self.secret = self.read_string()
         self.keyTime = self.read_int32()
-        self.key = self.read_bytearray()
+        self.key = self.read_bytestring()
         self.MapJSON = self.read_string()
         self.entryTag = self.read_string()
         self.gameNet = self.read_string()
@@ -390,10 +390,10 @@ class KeyInfoRequestPacket(Packet.Packet):
         self.Request = []
 
     def write(self, request):
-        self.write_bytearray(request)
+        self.write_bytestring(request)
 
     def read(self):
-        self.Request = self.read_bytearray()
+        self.Request = self.read_bytestring()
 
 
 class LeaveArenaPacket(Packet.Packet):
@@ -786,22 +786,33 @@ class ViewQuestsPacket(Packet.Packet):
 # Server packets?
 class TextPacket(Packet.Packet):
     def __init__(self):
+        self.name = ""
+        self.objectid = 0
+        self.numstars = 0
+        self.bubbletime = 0
+        self.recipient = ""
+        self.text = ""
+        self.cleantext = ""
         super(TextPacket, self).__init__()
 
     def write(self, name, objectid, numstars, bubbletime, recipient, text, cleantext):
         self.write_string(name)
         self.write_int32(objectid)
         self.write_int32(numstars)
-        self.write_byte(chr(bubbletime))
+        self.write_byte(bubbletime)
         self.write_string(recipient)
         self.write_string(text)
         self.write_string(cleantext)
 
     def read(self):
-        return (
-            self.read_string(), self.read_int32(), self.read_int32(), self.read_byte(), self.read_string(),
-            self.read_string(),
-            self.read_string())
+        self.name = self.read_string()
+        self.objectid = self.read_int32()
+        self.numstars = self.read_int32()
+        self.bubbletime = self.read_byte()
+        self.recipient = self.read_string()
+        self.text = self.read_string()
+        self.cleantext = self.read_string()
+        return self.name, self.objectid, self.numstars, self.bubbletime, self.recipient, self.text, self.cleantext
 
 
 class AccountListPacket(Packet.Packet):
@@ -966,6 +977,27 @@ class CreateSuccessPacket(Packet.Packet):
         return self.objectId, self.charId
 
 
+# override public function parseFromInput(param1:IDataInput) : void
+#       {
+#          var _loc3_:* = 0;
+#          this.targetId_ = param1.readInt();
+#          this.effects_.length = 0;
+#          var _loc2_:uint = param1.readUnsignedByte();
+#          _loc3_ = uint(0);
+#          while(_loc3_ < _loc2_)
+#          {
+#             this.effects_.push(param1.readUnsignedByte());
+#             _loc3_++;
+#          }
+#          this.damageAmount_ = param1.readUnsignedShort();
+#          this.kill_ = param1.readBoolean();
+#          this.armorPierce_ = param1.readBoolean();
+#          this.bulletId_ = param1.readUnsignedByte();
+#          this.objectId_ = param1.readInt();
+#       }
+
+
+
 class DamagePacket(Packet.Packet):
     def __init__(self):
         super(DamagePacket, self).__init__()
@@ -976,6 +1008,24 @@ class DamagePacket(Packet.Packet):
         self.bulletid = ''
         self.objectid = 0
 
+    def write(self, targetid, effects, damage, killed, bulletid, objectid):
+        self.write_int32(targetid)
+        self.write_unsignedbyte(len(effects))
+        for effect in effects:
+            self.write_unsignedbyte(effect)
+        self.write_uint16(damage)
+        self.write_boolean(killed)
+        self.write_unsignedbyte(bulletid)
+        self.write_int32(objectid)
+
+    def read(self):
+        self.targetid = self.read_int32()
+        for _ in range(self.read_unsignedbyte()):
+            self.effects.append(self.read_unsignedbyte())
+        self.damage = self.read_uint16()
+        self.killed = self.read_boolean()
+        self.bulletid = self.read_unsignedbyte()
+        self.objectid = self.read_int32()
 
 class DeathPacket(Packet.Packet):
     def __init__(self):
@@ -1005,6 +1055,40 @@ class DeathPacket(Packet.Packet):
 class EnemyShootPacket(Packet.Packet):
     def __init__(self):
         super(EnemyShootPacket, self).__init__()
+        self.bulletId = 0
+        self.ownerId = 0
+        self.bulletType = 0
+        self.startingPos = 0, 0
+        self.angle = 0.0
+        self.damage = 0
+        self.numShots = 0
+        self.angleInc = 0.0
+
+    def write(self, bulletId, ownerid, bulletType, startingPos, angle, damage, numShots=1, angleInc=0):
+        self.write_unsignedbyte(bulletId)
+        self.write_int32(ownerid)
+        self.write_unsignedbyte(bulletType)
+        self.write_float(startingPos[0])
+        self.write_float(startingPos[1])
+        self.write_float(angle)
+        self.write_int16(damage)
+        self.write_unsignedbyte(numShots)
+        self.write_float(angleInc)
+
+    def read(self):
+        self.bulletId = self.read_unsignedbyte()
+        self.ownerId = self.read_int32()
+        self.bulletType = self.read_unsignedbyte()
+        self.startingPos = self.read_float(), self.read_float()
+        self.angle = self.read_float()
+        self.damage = self.read_int16()
+        if len(self.data[self.index:]) > 0:
+            self.numShots = self.read_unsignedbyte()
+            self.angleInc = self.read_float()
+        else:
+            self.numShots = 1
+            self.angleInc = 0
+        return self.bulletType, self.ownerId, self.bulletType, self.startingPos, self.angle, self.damage, self.numShots, self.angleInc
 
 
 class FailurePacket(Packet.Packet):
@@ -1033,12 +1117,12 @@ class NewTickPacket(Packet.Packet):
     def write(self, tickid, ticktime, statuses):
         self.write_int32(tickid)
         self.write_int32(ticktime)
-        self.write_bytearray(statuses)
+        self.write_bytestring(statuses)
 
     def read(self):
         self.TickId = self.read_int32()
         self.TickTime = self.read_int32()
-        self.Statuses = self.read_bytearray()
+        self.Statuses = self.read_bytestring()
         return self.TickId, self.TickTime, self.Statuses
 
 
@@ -1050,11 +1134,11 @@ class FilePacket(Packet.Packet):
 
     def write(self, name, bytes):
         self.write_string(name)
-        self.write_bytearray(bytes)
+        self.write_bytestring(bytes)
 
     def read(self):
         self.name = self.read_string()
-        self.bytes = self.read_bytearray()
+        self.bytes = self.read_bytestring()
         return self.name, self.bytes
 
 
@@ -1160,10 +1244,10 @@ class KeyInfoResponsePacket(Packet.Packet):
         self.response = []
 
     def write(self, response):
-        self.write_bytearray(response)
+        self.write_bytestring(response)
 
     def read(self):
-        self.response = self.read_bytearray()
+        self.response = self.read_bytestring()
         return self.response
 
 
@@ -1187,7 +1271,7 @@ class ReconnectPacket(Packet.Packet):
         self.write_int32(gameid)
         self.write_int32(keytime)
         self.write_boolean(isfromarena)
-        self.write_bytearray(key)
+        self.write_bytestring(key)
 
     def read(self):
         self.name = self.read_string()
@@ -1197,7 +1281,7 @@ class ReconnectPacket(Packet.Packet):
         self.gameid = self.read_int32()
         self.keytime = self.read_int32()
         self.isfromarena = self.read_boolean()
-        self.key = self.read_bytearray()
+        self.key = self.read_bytestring()
         return self.name, self.host, self.stats, self.port, self.gameid, self.keytime, self.isfromarena, self.key
 
 

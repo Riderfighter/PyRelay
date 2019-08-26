@@ -67,6 +67,14 @@ class Packet(object):
         t = struct.unpack(">b", self.data[self.index:self.advance(1)])
         return t[0]
 
+    def write_unsignedbyte(self, i):
+        d = struct.pack(">B", i)
+        self.data[self.index:self.advance(1)] = d
+
+    def read_unsignedbyte(self):
+        t = struct.unpack(">B", self.data[self.index:self.advance(1)])
+        return t[0]
+
     def read_float(self):
         t = struct.unpack(">f", self.data[self.index:self.advance(4)])
         return t[0]
@@ -88,65 +96,44 @@ class Packet(object):
         self.write_uint16(length)
         if length == 0:
             return
-        else:
-            self.data[self.index:self.advance(length)] = struct.pack(f">{length}s", string.encode("utf8"))
+        self.data[self.index:self.advance(length)] = struct.pack(f">{length}s", string.encode("utf8"))
 
     def read_string(self):
         length = self.read_uint16()
         if length == 0:
             return ""
-        else:
-            d = struct.unpack(f">{length}s", self.data[self.index:self.advance(length)])[0].decode(
-                "utf8")  # convert the byte from byte type to int/String type
-            return d
+        d = struct.unpack(f">{length}s", self.data[self.index:self.advance(length)])[0].decode(
+            "utf8")  # convert the byte from byte type to int/String type
+        return d
 
-    # def writeBytearray(self, bytes):
-    #     length = len(bytes)
-    #     self.writeInt16(length)
-    #     if length == 0:
-    #         return
-    #     else:
-    #         for i in bytes:
-    #             self.writeByte(i)
-
-    def write_bytearray(self, bytes):
+    def write_bytestring(self, bytes):
         length = len(bytes)
         self.write_int16(length)
         if length == 0:
             return
         self.data[self.index:self.advance(length)] = bytes
 
-    # def readBytearray(self):
-    #     length = self.readInt16()
-    #     if length == 0:
-    #         return []
-    #     else:
-    #         d = []
-    #         for _ in range(length):
-    #             d.append(self.readByte())  # convert the byte from byte type to int/String type
-    #         return d
-
-    def read_bytearray(self):
+    def read_bytestring(self):
         length = self.read_int16()
         if length == 0:
             return b''
-        return bytes(self.data[self.index:self.advance(length)])
+        d = bytes(self.data[self.index:self.advance(length)])
+        print(bytes(self.data[self.index - length - 2: self.index]))
+        return d
 
     def write_booleanarray(self, bytes):
         length = len(bytes)
         self.write_int32(length)
         if length == 0:
             return
-        else:
-            for i in bytes:
-                self.write_boolean(i)
+        for i in bytes:
+            self.write_boolean(i)
 
     def read_booleanarray(self):
         length = self.read_int16()
         if length == 0:
             return []
-        else:
-            d = []
-            for _ in range(length):
-                d.append(self.read_boolean())
-            return d
+        d = []
+        for _ in range(length):
+            d.append(self.read_boolean())
+        return d

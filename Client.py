@@ -1,4 +1,3 @@
-import binascii
 import importlib
 import os
 import select
@@ -13,14 +12,14 @@ import Utilities
 
 
 class Client:
-    incoming = b'c79332b197f92ba85ed281a023'
-    outgoing = b'6a39570cc9de4ec71d64821894'
+    incoming = "c79332b197f92ba85ed281a023"
+    outgoing = "6a39570cc9de4ec71d64821894"
     arc4_decrypt_in_cipher = None
     arc4_encrypt_in_cipher = None
     arc4_decrypt_out_cipher = None
     arc4_encrypt_out_cipher = None
     _state: State = None
-    packetPointers = Utilities.Packetsetup().setupPacket()
+    packetPointers = Utilities.Packetsetup().setup_packet()
     server = None
     running = False
     plugins = []
@@ -30,10 +29,10 @@ class Client:
     def __init__(self, proxy, client):
         self._proxy = proxy
         self.client = client
-        self.arc4_decrypt_in_cipher = ARC4.new(binascii.unhexlify(self.incoming))
-        self.arc4_encrypt_in_cipher = ARC4.new(binascii.unhexlify(self.incoming))
-        self.arc4_decrypt_out_cipher = ARC4.new(binascii.unhexlify(self.outgoing))
-        self.arc4_encrypt_out_cipher = ARC4.new(binascii.unhexlify(self.outgoing))
+        self.arc4_decrypt_in_cipher = ARC4.new(bytes.fromhex(self.incoming))
+        self.arc4_encrypt_in_cipher = ARC4.new(bytes.fromhex(self.incoming))
+        self.arc4_decrypt_out_cipher = ARC4.new(bytes.fromhex(self.outgoing))
+        self.arc4_encrypt_out_cipher = ARC4.new(bytes.fromhex(self.outgoing))
         self.load_plugins()
 
     def hook_packet(self, hooked_packet: Packet.Packet, callback):
@@ -52,14 +51,15 @@ class Client:
         else:
             self._commandHooks[command] = callback
 
+    # TODO: Fix loading;/reloading plugins by actually reading how importlib works.
     def load_plugins(self):
         if self._packetHooks or self._commandHooks:
             self._packetHooks.clear()
             self._commandHooks.clear()
-        plugin_dir = "./plugins"
+        plugin_dir = f"{os.path.dirname(os.path.realpath(__file__))}/plugins"
         possible_plugins = os.listdir(plugin_dir)
         for i in [file for file in possible_plugins if
-                  not file.startswith(".")]:  # removing all files that start with a "." on mac
+                  not file.startswith(".")]:  # removing all hidden files on mac and probably other OSes
             plugin = importlib.import_module(f"plugins.{i}.{i}")
             if plugin not in self.plugins:
                 self.plugins.append(plugin)
@@ -73,8 +73,7 @@ class Client:
     def state(self, new_state: state):
         self._state = new_state
         if not self.server:
-            self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.server.connect((new_state.lastServer, new_state.lastPort))
+            self.server = socket.create_connection((new_state.lastServer, new_state.lastPort))
             print(new_state.guid, "starting up: ", self)
 
     def start(self):
@@ -86,13 +85,21 @@ class Client:
         Restarts client by closing the client socket, server socket.
         """
         print("Disposing of client sockets")
+        self.client.shutdown(socket.SHUT_RDWR)
         self.client.close()
+        for _ in range(3):
+            self.server.send(b"")  # fake the socket being closed to the server so that it will 100% close by using
+            # b"" because a closed socket would send it. This is to fix an issue where self.server.close() wouldn't
+            # work properly.
+        self.server.shutdown(socket.SHUT_RDWR)
         self.server.close()
         self.running = False
 
     def read_remote(self, from_client=True):
         """
-        sends data from socket2 to socket 1
+        Sends data from server to client and client to server
+
+        "Oh yeah its big brain time."
         """
         sender = self.client if from_client else self.server
         try:
@@ -115,7 +122,7 @@ class Client:
                     new_packet = self.packetPointers.get(packet_id)()
                     new_packet.data.extend(decoded_data)
                     self.process_client_packet(new_packet)
-                    if not new_packet.send:
+                    if not new_packet.send:  # Handle packets being read but not sent to the server/client
                         return
                 header = header[:5] + self.arc4_encrypt_out_cipher.encrypt(decoded_data)
             else:
@@ -124,7 +131,7 @@ class Client:
                     new_packet = self.packetPointers.get(packet_id)()
                     new_packet.data.extend(decoded_data)
                     self.process_packet_callbacks(new_packet)
-                    if not new_packet.send:
+                    if not new_packet.send:  # Handle packets being read but not sent to the server/client
                         return
                 header = header[:5] + self.arc4_encrypt_in_cipher.encrypt(decoded_data)
             receiver = self.server if from_client else self.client
@@ -136,7 +143,7 @@ class Client:
         data = bytes(packet_to_process.data)
         packet_id = None
         for key, value in self.packetPointers.items():
-            if value and value.__name__ == packet_to_process.__class__.__name__:
+            if value and value == type(packet_to_process):
                 packet_id = key
                 break
         if packet_id:
@@ -146,8 +153,6 @@ class Client:
             else:
                 header = struct.pack(">ib", len(data) + 5, packet_id) + self.arc4_encrypt_out_cipher.encrypt(data)
                 self.server.send(header)
-        else:
-            print("No packet_to_process id for:", packet_to_process.__class__.__name__)
 
     def send_to_client(self, new_packet):
         self.send_packet(new_packet, True)
@@ -157,7 +162,7 @@ class Client:
 
     def process_client_packet(self, hooked_packet):
         # Implement command hooks later
-        if hooked_packet.__class__.__name__ == "PlayerTextPacket":
+        if type(hooked_packet).__name__ == "PlayerTextPacket":
             player_text = hooked_packet.read()
             if player_text.startswith("/"):
                 command_text = player_text.replace("/", "").split(" ")
@@ -170,9 +175,9 @@ class Client:
         self.process_packet_callbacks(hooked_packet)
 
     def process_packet_callbacks(self, packet_to_process):
-        for packetName in self._packetHooks:
-            if packetName == packet_to_process.__class__.__name__:
-                for callback in self._packetHooks[packetName]:
+        for hooked_packet_name in self._packetHooks:
+            if hooked_packet_name == type(packet_to_process).__name__:
+                for callback in self._packetHooks[hooked_packet_name]:
                     callback(packet_to_process)
 
     def route(self):

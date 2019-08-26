@@ -7,9 +7,8 @@ import Client
 
 # 6a39570cc9de4ec71d64821894 c79332b197f92ba85ed281a023
 # Client.py to proxy only
-
 class Proxy:
-    _debug = True
+    _debug = False
     # Constant variables/classes
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -25,15 +24,16 @@ class Proxy:
         adobe_policy.listen(1)
         while True:
             policy, addr = adobe_policy.accept()
-            print("sending xml")
+            print("[!] A Flash player is requesting the cross-domain policy")
             policy.sendall(
                 b'<?xml version="1.0"?><!DOCTYPE cross-domain-policy SYSTEM "/xml/dtds/cross-domain-policy.dtd">  <cross-domain-policy>  <site-control permitted-cross-domain-policies="master-only"/>  <allow-access-from domain="*" to-ports="*" /></cross-domain-policy>')
             policy.close()
+            time.sleep(0.005)
 
     def enable_clients(self):
         # TODO: Allow multiple clients connected to the proxy and handle each individually
         self.listener.bind(('127.0.0.1', 2050))
-        self.listener.listen(5)
+        self.listener.listen(1)
         while True:  # While true cuz we cool and want a continuous loop to accept all the new clients
             client, _ = self.listener.accept()
             client1 = Client.Client(self, client)
