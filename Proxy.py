@@ -13,16 +13,16 @@ import Utilities
 # 6a39570cc9de4ec71d64821894 c79332b197f92ba85ed281a023
 # client to proxy only
 
-class Proxy(object):
+class Proxy:
     def __init__(self):
         # Constant variables/classes
-        self.defaultServer = "54.183.236.213"
+        self.defaultServer = "13.57.182.96"
         self.lastServer = self.defaultServer
         self.defaultPort = 2050
         self.lastPort = 2050
-        self.packetPointers = Utilities.Packetsetup().setupPacket()
-        self.crypto = Utilities.CryptoUtils(b'6a39570cc9de4ec71d64821894', b'c79332b197f92ba85ed281a023')
-
+        self.packetPointers = Utilities.Packetsetup().setup_packet()
+        self.crypto = Utilities.CryptoUtils('6a39570cc9de4ec71d64821894', 'c79332b197f92ba85ed281a023')
+        self.playerid = 0
         # commonly mutated variables/classes
         # Dont access _packetHooks/_commandHooks directly, they are considered private variables.
         self.plugins = []
@@ -43,9 +43,10 @@ class Proxy(object):
             plugin = importlib.import_module(f"plugins.{i}.{i}")
             if plugin not in self.plugins:
                 self.plugins.append(plugin)
-            getattr(plugin, i)(self)
-        print(self._commandHooks)
-        print(self._packetHooks)
+            else:
+                importlib.reload(plugin)
+        for plugin in self.plugins:
+            getattr(plugin, plugin.__name__.split(".")[2])(self)
 
     def enableSWFPROXY(self):
         Adobepolicy = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -117,14 +118,11 @@ class Proxy(object):
                         packet.send = False
 
         # Should call a hooked function
-        for packetName in self._packetHooks:
-            if packetName == packet.__class__.__name__:
-                for callback in self._packetHooks[packetName]:
-                    callback(packet)
+        self.process_packet(packet)
 
-    def processServerPacket(self, packet):
+    def process_packet(self, packet):
         for packetName in self._packetHooks:
-            if packetName == packet.__class__.__name__:
+            if packetName == type(packet).__name__:
                 for callback in self._packetHooks[packetName]:
                     callback(packet)
 
@@ -133,6 +131,8 @@ class Proxy(object):
         sends data from socket2 to socket 1
         """
         header = socket2.recv(5)  # Receives data from socket2
+        if len(header) == 0:
+            self.restartProxy()
         if header == b'\xff':
             print("Kill byte received, all hell will break loose.")
             self.listener.close()
@@ -161,7 +161,7 @@ class Proxy(object):
             if self.packetPointers.get(packetid):
                 Packet = self.packetPointers.get(packetid)()
                 Packet.data.extend(dedata)
-                self.processServerPacket(Packet)
+                self.process_packet(Packet)
                 if not Packet.send:
                     return
             header = header[:5] + self.crypto.serverIn(dedata)
@@ -175,6 +175,7 @@ class Proxy(object):
                 continue
             break
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        time.sleep(1)
         self.server.connect((self.lastServer, self.lastPort))
         self.running = True
         self.Route()
@@ -203,7 +204,7 @@ class Proxy(object):
                 if not self.running:
                     break
                 rlist = select.select([self.client, self.server], [], [])[0]
-
+                # print(rlist)
                 if self.client in rlist:
                     self.readRemote(self.server, self.client, True)
                 if self.server in rlist:
@@ -213,6 +214,9 @@ class Proxy(object):
             self.client.close()
             self.server.close()
             self.listener.close()
+        except Exception as e:
+            print(e)
+
         print("Loop successfully exited")
 
 
