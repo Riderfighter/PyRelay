@@ -24,8 +24,7 @@
 - [X] Implement a plugin system.
     - [X] Allow commands to be set via plugins.
     - [X] Allow plugins to load on proxy startup.
-    - [ ] Reload all plugins for a client with a `/reload` command.
-        - I need to actually read about how importlib reloads modules.
+    - [X] Reload all plugins for a client with a `/reload` command.
 - [ ] Implement all packets.
     - [X] Implement core client packets.
     - [X] Implement core server packets.
