@@ -1,5 +1,6 @@
 import json
 
+import Datatypes
 import Packet
 
 
@@ -784,6 +785,28 @@ class ViewQuestsPacket(Packet.Packet):
 
 
 # Server packets?
+
+class UpdatePacket(Packet.Packet):
+    tiles = []
+    newobjs = []
+    drops = []
+
+    def __init__(self):
+        super(UpdatePacket, self).__init__()
+
+    def read(self):
+        for _ in range(self.read_int16()):
+            tile = Datatypes.Tile(self)
+            tile.read()
+            self.tiles.append(tile)
+        for _ in range(self.read_int16()):
+            entity = Datatypes.Entity(self)
+            entity.read()
+            self.newobjs.append(entity)
+        for _ in range(self.read_int16()):
+            self.drops.append(self.read_int32())
+
+
 class TextPacket(Packet.Packet):
     def __init__(self):
         self.name = ""
@@ -977,27 +1000,6 @@ class CreateSuccessPacket(Packet.Packet):
         return self.objectId, self.charId
 
 
-# override public function parseFromInput(param1:IDataInput) : void
-#       {
-#          var _loc3_:* = 0;
-#          this.targetId_ = param1.readInt();
-#          this.effects_.length = 0;
-#          var _loc2_:uint = param1.readUnsignedByte();
-#          _loc3_ = uint(0);
-#          while(_loc3_ < _loc2_)
-#          {
-#             this.effects_.push(param1.readUnsignedByte());
-#             _loc3_++;
-#          }
-#          this.damageAmount_ = param1.readUnsignedShort();
-#          this.kill_ = param1.readBoolean();
-#          this.armorPierce_ = param1.readBoolean();
-#          this.bulletId_ = param1.readUnsignedByte();
-#          this.objectId_ = param1.readInt();
-#       }
-
-
-
 class DamagePacket(Packet.Packet):
     def __init__(self):
         super(DamagePacket, self).__init__()
@@ -1155,6 +1157,7 @@ class GlobalNotificationPacket(Packet.Packet):
     def read(self):
         self.typeId = self.read_int32()
         self.text = self.read_string()
+        return self.typeId, self.text
 
 
 class NotificationPacket(Packet.Packet):

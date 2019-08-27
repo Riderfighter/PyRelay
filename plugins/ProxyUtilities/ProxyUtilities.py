@@ -1,5 +1,7 @@
-import threading
 import random
+import socket
+import threading
+
 import Packets
 import Proxy
 
@@ -23,7 +25,7 @@ class ProxyUtilities:
         self._proxy.sendToClient(packet)
 
     def reloadPlugins(self, args):
-        self._proxy.loadPlugins()
+        threading.Thread(target=self._proxy.loadPlugins).start()
         newPacket = Packets.NotificationPacket()
         newPacket.write(self._proxy.playerid, "Plugins hotloaded!", 0x8B00FF)
         self._proxy.sendToClient(newPacket)
@@ -35,6 +37,11 @@ class ProxyUtilities:
     def onHello(self, packet: Packets.HelloPacket):
         data = packet.read()
         print(data)
+        if data[1] == -2 and self._proxy.lastServer != self._proxy.defaultServer:
+            self._proxy.lastServer = self._proxy.defaultServer
+            self._proxy.lastPort = self._proxy.defaultPort
+        self._proxy.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._proxy.server.connect((self._proxy.lastServer, self._proxy.lastPort))
 
     def onReconnect(self, packet: Packets.ReconnectPacket):
         packet.send = False

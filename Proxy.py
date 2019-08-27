@@ -16,7 +16,7 @@ import Utilities
 class Proxy:
     def __init__(self):
         # Constant variables/classes
-        self.defaultServer = "13.57.182.96"
+        self.defaultServer = "54.183.179.205"
         self.lastServer = self.defaultServer
         self.defaultPort = 2050
         self.lastPort = 2050
@@ -26,6 +26,8 @@ class Proxy:
         # commonly mutated variables/classes
         # Dont access _packetHooks/_commandHooks directly, they are considered private variables.
         self.plugins = []
+        self.reloading_plugins = False
+        self.processing = False
         self._packetHooks = {}
         self._commandHooks = {}
         self.running = True
@@ -34,19 +36,28 @@ class Proxy:
         self.client = None
 
     def loadPlugins(self):
+        while self.processing:
+            time.sleep(0.005)
+            continue
+        self.reloading_plugins = True
         if self._packetHooks or self._commandHooks:
             self._packetHooks.clear()
             self._commandHooks.clear()
         pluginDIR = "./plugins"
         possibleplugins = os.listdir(pluginDIR)
+        testset = set()
         for i in [file for file in possibleplugins if not file.startswith(".")]:  # removing all files that start with a "." on mac
             plugin = importlib.import_module(f"plugins.{i}.{i}")
+            testset.add(plugin)
             if plugin not in self.plugins:
                 self.plugins.append(plugin)
             else:
                 importlib.reload(plugin)
+        for oldplugin in list(set(self.plugins) - testset):
+            self.plugins.remove(oldplugin)
         for plugin in self.plugins:
             getattr(plugin, plugin.__name__.split(".")[2])(self)
+        self.reloading_plugins = False
 
     def enableSWFPROXY(self):
         Adobepolicy = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -54,9 +65,10 @@ class Proxy:
         Adobepolicy.listen(1)
         while True:
             policy, addr = Adobepolicy.accept()
-            print("sending xml")
+            print("[!] Client is asking for privacy policy!")
             policy.sendall(
                 b'<?xml version="1.0"?><!DOCTYPE cross-domain-policy SYSTEM "/xml/dtds/cross-domain-policy.dtd">  <cross-domain-policy>  <site-control permitted-cross-domain-policies="master-only"/>  <allow-access-from domain="*" to-ports="*" /></cross-domain-policy>')
+            time.sleep(1)
             policy.close()
 
     def enableClients(self):
@@ -126,10 +138,11 @@ class Proxy:
                 for callback in self._packetHooks[packetName]:
                     callback(packet)
 
-    def readRemote(self, socket, socket2, fromClient=True):
+    def readRemote(self, fromClient=True):
         """
         sends data from socket2 to socket 1
         """
+        socket2 = self.client if fromClient else self.server
         header = socket2.recv(5)  # Receives data from socket2
         if len(header) == 0:
             self.restartProxy()
@@ -149,22 +162,29 @@ class Proxy:
             header += socket2.recv(datalength - len(header[5:]))
         if fromClient:
             dedata = self.crypto.clientOut(header[5:])
-            if self.packetPointers.get(packetid):
-                Packet = self.packetPointers.get(packetid)()
-                Packet.data.extend(dedata)
-                self.processClientPacket(Packet)
-                if not Packet.send:
-                    return
+            if not self.reloading_plugins:
+                if self.packetPointers.get(packetid):
+                    Packet = self.packetPointers.get(packetid)()
+                    Packet.data.extend(dedata)
+                    self.processing = True
+                    self.processClientPacket(Packet)
+                    self.processing = False
+                    if not Packet.send:
+                        return
             header = header[:5] + self.crypto.clientIn(dedata)
         else:
             dedata = self.crypto.serverOut(header[5:])
-            if self.packetPointers.get(packetid):
-                Packet = self.packetPointers.get(packetid)()
-                Packet.data.extend(dedata)
-                self.process_packet(Packet)
-                if not Packet.send:
-                    return
+            if not self.reloading_plugins:
+                if self.packetPointers.get(packetid):
+                    Packet = self.packetPointers.get(packetid)()
+                    Packet.data.extend(dedata)
+                    self.processing = True
+                    self.process_packet(Packet)
+                    self.processing = False
+                    if not Packet.send:
+                        return
             header = header[:5] + self.crypto.serverIn(dedata)
+        socket = self.server if fromClient else self.client
         socket.send(header)  # Sends data from socket2 to socket1
 
     def startUpProxy(self):
@@ -174,9 +194,8 @@ class Proxy:
                 time.sleep(0.005)  # Don't touch this, otherwise 100% CPU
                 continue
             break
-        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        time.sleep(1)
-        self.server.connect((self.lastServer, self.lastPort))
+        # self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # self.server.connect((self.lastServer, self.lastPort))
         self.running = True
         self.Route()
         # threading.Thread(target=self.Route).start()
@@ -185,11 +204,12 @@ class Proxy:
         """
         Restarts proxy by closing the client connection, server connection and then starting up the proxy.
         """
-        print("restarting proxy")
+        print("[!] Restarting proxy!")
         self.client.close()
         self.server.close()
         self.running = False
         self.client = None
+        self.server = None
         self.startUpProxy()
 
     def start(self):
@@ -203,19 +223,18 @@ class Proxy:
             while True:
                 if not self.running:
                     break
-                rlist = select.select([self.client, self.server], [], [])[0]
-                # print(rlist)
+
+                rlist = select.select([self.client, self.server], [], [])[0] if self.server else \
+                select.select([self.client], [], [])[0]
                 if self.client in rlist:
-                    self.readRemote(self.server, self.client, True)
+                    self.readRemote()
                 if self.server in rlist:
-                    self.readRemote(self.client, self.server, False)
+                    self.readRemote(False)
 
         except KeyboardInterrupt:
             self.client.close()
             self.server.close()
             self.listener.close()
-        except Exception as e:
-            print(e)
 
         print("Loop successfully exited")
 

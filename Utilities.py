@@ -70,7 +70,7 @@ class Packetsetup:
                                     'MOVE': Packets.MovePacket, 'PLAYERTEXT': Packets.PlayerTextPacket,
                                     'TEXT': Packets.TextPacket, 'SERVERPLAYERSHOOT': None,
                                     'DAMAGE': Packets.DamagePacket,
-                                    'UPDATE': None,
+                                    'UPDATE': Packets.UpdatePacket,
                                     'UPDATEACK': Packets.UpdateAckPacket, 'NOTIFICATION': Packets.NotificationPacket,
                                     'NEWTICK': Packets.NewTickPacket, 'INVSWAP': Packets.InvSwapPacket,
                                     'USEITEM': Packets.UseItemPacket, 'SHOWEFFECT': None, 'HELLO': Packets.HelloPacket,
