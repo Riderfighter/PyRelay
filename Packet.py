@@ -7,6 +7,10 @@ class Packet(object):
         self.index = 0
         self.send = True
 
+    def reset(self):
+        self.index = 0
+        self.data = bytearray()
+
     def advance(self, amt):
         self.index += amt
         return self.index
@@ -118,7 +122,6 @@ class Packet(object):
         if length == 0:
             return b''
         d = bytes(self.data[self.index:self.advance(length)])
-        print(bytes(self.data[self.index - length - 2: self.index]))
         return d
 
     def write_booleanarray(self, bytes):

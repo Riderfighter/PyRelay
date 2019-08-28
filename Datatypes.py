@@ -105,7 +105,7 @@ class StatType:
         self.m_type = ttype
 
     def isutf8(self):
-        return self.m_type in [self.Name, self.AccountId, self.OwnerAccountId, self.GuildName, self.PetName]
+        return self.m_type in (self.Name, self.AccountId, self.OwnerAccountId, self.GuildName, self.PetName)
 
 
 class StatData:
@@ -232,3 +232,44 @@ class Entity:
     def write(self):
         self.sprcls.write_int16(self.objecttype)
         self.status.write()
+
+
+class SlotObject:
+    objectid = 0
+    slotid = 0
+    objecttype = 0
+
+    def __init__(self, superclass: Packet.Packet):
+        self.sprcls = superclass
+
+    def read(self):
+        self.objectid = self.sprcls.read_int32()
+        self.slotid = self.sprcls.read_byte()
+        self.objecttype = self.sprcls.read_int32()
+
+    def write(self):
+        self.sprcls.write_int32(self.objectid)
+        self.sprcls.write_byte(self.slotid)
+        self.sprcls.write_int32(self.objecttype)
+
+
+class Item:
+    itemItem = 0
+    slotType = 0
+    tradeable = False
+    included = False
+
+    def __init__(self, superclass: Packet.Packet):
+        self.sprcls = superclass
+
+    def read(self):
+        self.itemItem = self.sprcls.read_int32()
+        self.slotType = self.sprcls.read_int32()
+        self.tradeable = self.sprcls.read_boolean()
+        self.included = self.sprcls.read_boolean()
+
+    def write(self):
+        self.sprcls.write_int32(self.itemItem)
+        self.sprcls.write_int32(self.slotType)
+        self.sprcls.write_boolean(self.tradeable)
+        self.sprcls.write_boolean(self.included)

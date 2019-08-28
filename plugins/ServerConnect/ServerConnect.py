@@ -38,12 +38,26 @@ class ServerConnect:
             self._proxy.defaultServer = ip
             self._proxy.lastServer = ip
             packet = Packets.ReconnectPacket()
-            # name, host, stats, port, gameid, keytime, isfromarena, key
-            packet.write("{\"text\":\"server.nexus\"}", "localhost", "", 2050, -2, 0, False, b"")
+            # name, host, stats, port, gameId, keyTime, isFromArena, key
+            packet.name = "{\"text\":\"server.nexus\"}"
+            packet.host = "localhost"
+            packet.stats = ""
+            packet.port = 2050
+            packet.gameId = -2
+            packet.keyTime = 0
+            packet.isFromArena = False
+            packet.key = b""
+            packet.write()
             self._proxy.sendToClient(packet)
             # self._proxy.restartProxy()
         else:
-            packet = Packets.GlobalNotificationPacket()
-            packet.write(self._proxy.playerid,
-                         f'{args[0]} is not a valid server. Try one of the following: {" ".join(self.servers)}')
-            self._proxy.sendToClient(packet)
+            textpacket = Packets.TextPacket()
+            textpacket.bubbletime = 0
+            textpacket.cleantext = f'{args[0]} is not a valid server. Try one of the following: {" ".join(self.servers)}'
+            textpacket.name = "#ServerConnect"
+            textpacket.numstars = -1
+            textpacket.objectid = -1
+            textpacket.recipient = ""
+            textpacket.text = f'{args[0]} is not a valid server. Try one of the following: {" ".join(self.servers)}'
+            textpacket.write()
+            self._proxy.sendToClient(textpacket)

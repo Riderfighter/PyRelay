@@ -100,7 +100,7 @@ class Proxy:
         data = bytes(packet.data)
         for key, value in self.packetPointers.items():
             if value:
-                if value.__name__ == packet.__class__.__name__:
+                if value.__name__ == type(packet).__name__:
                     packetId = key
                     break
         if packetId == "":
@@ -121,9 +121,9 @@ class Proxy:
     def processClientPacket(self, packet):
         # Implement command hooks later
         if packet.__class__.__name__ == "PlayerTextPacket":
-            playerText = packet.read()
-            if playerText.startswith("/"):
-                commandText = playerText.replace("/", "").split(" ")
+            # playerText = packet.read()
+            if packet.text.startswith("/"):
+                commandText = packet.text.replace("/", "").split(" ")
                 for command in self._commandHooks:
                     if command == commandText[0]:
                         self._commandHooks[command](commandText[1:])
@@ -166,11 +166,13 @@ class Proxy:
                 if self.packetPointers.get(packetid):
                     Packet = self.packetPointers.get(packetid)()
                     Packet.data.extend(dedata)
+                    Packet.read()
                     self.processing = True
                     self.processClientPacket(Packet)
                     self.processing = False
                     if not Packet.send:
                         return
+                    Packet.write()
             header = header[:5] + self.crypto.clientIn(dedata)
         else:
             dedata = self.crypto.serverOut(header[5:])
@@ -178,11 +180,13 @@ class Proxy:
                 if self.packetPointers.get(packetid):
                     Packet = self.packetPointers.get(packetid)()
                     Packet.data.extend(dedata)
+                    Packet.read()
                     self.processing = True
                     self.process_packet(Packet)
                     self.processing = False
                     if not Packet.send:
                         return
+                    Packet.write()
             header = header[:5] + self.crypto.serverIn(dedata)
         socket = self.server if fromClient else self.client
         socket.send(header)  # Sends data from socket2 to socket1
