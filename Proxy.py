@@ -120,7 +120,7 @@ class Proxy:
 
     def processClientPacket(self, packet):
         # Implement command hooks later
-        if packet.__class__.__name__ == "PlayerTextPacket":
+        if type(packet).__name__ == "PlayerTextPacket":
             # playerText = packet.read()
             if packet.text.startswith("/"):
                 commandText = packet.text.replace("/", "").split(" ")
@@ -176,6 +176,8 @@ class Proxy:
             header = header[:5] + self.crypto.clientIn(dedata)
         else:
             dedata = self.crypto.serverOut(header[5:])
+            if packetid == 62:
+                print(dedata)
             if not self.reloading_plugins:
                 if self.packetPointers.get(packetid):
                     Packet = self.packetPointers.get(packetid)()
@@ -198,11 +200,8 @@ class Proxy:
                 time.sleep(0.005)  # Don't touch this, otherwise 100% CPU
                 continue
             break
-        # self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # self.server.connect((self.lastServer, self.lastPort))
         self.running = True
         self.Route()
-        # threading.Thread(target=self.Route).start()
 
     def restartProxy(self):
         """
