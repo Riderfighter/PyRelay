@@ -39,7 +39,7 @@ class StatType:
     Credits = 35
     MerchandisePrice = 36
     PortalUsable = 37
-    AccountId = 39
+    AccountId = 38
     AccountFame = 39
     MerchandiseCurrency = 40
     ObjectConnection = 41
@@ -99,6 +99,8 @@ class StatType:
     PetAbilityType2 = 95
     Effects2 = 96
     FortuneTokens = 97
+    SupporterPointsStat = 98
+    SupporterStat = 99
     m_type = None
 
     def __init__(self, ttype):

@@ -53,11 +53,11 @@ class ServerConnect:
         else:
             textpacket = Packets.TextPacket()
             textpacket.bubbletime = 0
-            textpacket.cleantext = f'{args[0]} is not a valid server. Try one of the following: {" ".join(self.servers)}'
+            textpacket.cleantext = f'{args[0]} is not a valid server. Try something else!'
             textpacket.name = "#ServerConnect"
             textpacket.numstars = -1
             textpacket.objectid = -1
             textpacket.recipient = ""
-            textpacket.text = f'{args[0]} is not a valid server. Try one of the following: {" ".join(self.servers)}'
+            textpacket.text = f'{args[0]} is not a valid server. Try something else!'
             textpacket.write()
             self._proxy.sendToClient(textpacket)

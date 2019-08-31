@@ -228,7 +228,7 @@ class GotoAckPacket(Packet.Packet):
 
     def write(self):
         self.reset()
-        self.write_int16(self.time)
+        self.write_int32(self.time)
 
     def read(self):
         self.time = self.read_int32()

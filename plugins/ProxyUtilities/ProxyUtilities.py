@@ -16,16 +16,11 @@ class ProxyUtilities:
         proxy.hookPacket(Packets.CreateSuccessPacket, self.onCreateSuccess)
         proxy.hookPacket(Packets.ReconnectPacket, self.onReconnect)
         proxy.hookPacket(Packets.FailurePacket, self.onFailure)
+        proxy.hookPacket(Packets.UpdatePacket, self.onUpdate)
         proxy.hookCommand("reload", self.reloadPlugins)
-        proxy.hookCommand("plugintest", self.sendTest)
 
-    def sendTest(self, args):
-        packet = Packets.NotificationPacket()
-        packet.objectId = self._proxy.playerid
-        packet.message = "Ran plugin test."
-        packet.color = 0x8B00FF
-        packet.write()
-        self._proxy.sendToClient(packet)
+    def onUpdate(self, packet: Packets.UpdatePacket):
+        print("Got update!")
 
     def reloadPlugins(self, args):
         threading.Thread(target=self._proxy.loadPlugins).start()
