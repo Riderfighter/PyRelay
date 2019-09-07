@@ -936,27 +936,30 @@ class AoEPacket(Packet.Packet):
         self.effectDuration = 0.0
         self.originType = 0
         self.color = 0
+        self.armorPierce = False
 
     def write(self):
         self.reset()
         self.location.write()
         self.write_float(self.radius)
         self.write_uint16(self.damage)
-        self.write_byte(self.effects)
+        self.write_unsignedbyte(self.effects)
         self.write_float(self.effectDuration)
         self.write_int16(self.originType)
         self.write_int32(self.color)
+        self.write_boolean(self.armorPierce)
 
     def read(self):
         self.location = Datatypes.Location(self)
         self.location.read()
         self.radius = self.read_float()
         self.damage = self.read_uint16()
-        self.effects = self.read_byte()
+        self.effects = self.read_unsignedbyte()
         self.effectDuration = self.read_float()
-        self.originType = self.read_int16()
+        self.originType = self.read_uint16()
         self.color = self.read_int32()
-        return self.location, self.radius, self.damage, self.effects, self.effectDuration, self.originType, self.color
+        self.armorPierce = self.read_boolean()
+        return self.location, self.radius, self.damage, self.effects, self.effectDuration, self.originType, self.color, self.armorPierce
 
 
 class ArenaDeathPacket(Packet.Packet):
@@ -1061,7 +1064,8 @@ class DamagePacket(Packet.Packet):
         self.effects = []
         self.damage = 0.0
         self.killed = False
-        self.bulletId = ''
+        self.armorPierce = False
+        self.bulletId = 0
         self.objectId = 0
 
     def write(self):
@@ -1072,6 +1076,7 @@ class DamagePacket(Packet.Packet):
             self.write_unsignedbyte(effect)
         self.write_uint16(self.damage)
         self.write_boolean(self.killed)
+        self.write_boolean(self.armorPierce)
         self.write_unsignedbyte(self.bulletId)
         self.write_int32(self.objectId)
 
@@ -1081,6 +1086,7 @@ class DamagePacket(Packet.Packet):
             self.effects.append(self.read_unsignedbyte())
         self.damage = self.read_uint16()
         self.killed = self.read_boolean()
+        self.armorPierce = self.read_boolean()
         self.bulletId = self.read_unsignedbyte()
         self.objectId = self.read_int32()
 
@@ -1130,8 +1136,9 @@ class EnemyShootPacket(Packet.Packet):
         self.startingPos.write()
         self.write_float(self.angle)
         self.write_int16(self.damage)
-        self.write_unsignedbyte(self.numShots)
-        self.write_float(self.angleInc)
+        if self.numShots != 1:
+            self.write_unsignedbyte(self.numShots)
+            self.write_float(self.angleInc)
 
     def read(self):
         self.bulletId = self.read_unsignedbyte()
