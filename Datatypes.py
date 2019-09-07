@@ -204,7 +204,7 @@ class Status:
         self.object_id = self.sprcls.read_int32()
         self.position = Location(self.sprcls)
         self.position.read()
-        self.data = list(range(self.sprcls.read_int16()))
+        self.data = [None] * self.sprcls.read_int16()
         for _ in range(len(self.data)):
             statData = StatData(self.sprcls)
             statData.read()

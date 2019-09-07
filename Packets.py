@@ -465,7 +465,7 @@ class MovePacket(Packet.Packet):
         self.time = self.read_int32()
         self.new_position = Datatypes.Location(self)
         self.new_position.read()
-        self.records = list(range(self.read_int16()))
+        self.records = [None] * self.read_int16()
         for _ in range(len(self.records)):
             moverec = Datatypes.MoveRecord(self)
             moverec.read()
@@ -818,17 +818,17 @@ class UpdatePacket(Packet.Packet):
         super(UpdatePacket, self).__init__()
 
     def read(self):
-        self.tiles = list(range(self.read_int16()))
+        self.tiles = [None] * self.read_int16()
         for _ in range(len(self.tiles)):
             tile = Datatypes.Tile(self)
             tile.read()
             self.tiles[_] = tile
-        self.newobjs = list(range(self.read_int16()))
+        self.newobjs = [None] * self.read_int16()
         for _ in range(len(self.newobjs)):
             entity = Datatypes.Entity(self)
             entity.read()
             self.newobjs[_] = entity
-        self.drops = list(range(self.read_int16()))
+        self.drops = [None] * self.read_int16()
         for _ in range(len(self.drops)):
             self.drops[_] = self.read_int32()
 
@@ -896,7 +896,7 @@ class AccountListPacket(Packet.Packet):
 
     def read(self):
         self.accountlistId = self.read_int32()
-        self.accountIds = list(range(self.read_int16()))
+        self.accountIds = [None] * self.read_int16()
         for x in range(len(self.accountIds)):
             self.accountIds[x] = self.read_string()
         self.lockAction = self.read_int32()
@@ -1182,7 +1182,7 @@ class NewTickPacket(Packet.Packet):
     def read(self):
         self.tickId = self.read_int32()
         self.tickTime = self.read_int32()
-        self.statuses = list(range(self.read_int16()))
+        self.statuses = [None] * self.read_int16()
         for _ in range(len(self.statuses)):
             status = Datatypes.Status(self)
             status.read()
