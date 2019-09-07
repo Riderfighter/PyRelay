@@ -97,20 +97,19 @@ class Proxy:
             self._commandHooks[command] = callback
 
     def sendPacket(self, packet, forClient):
-        data = bytes(packet.data)
-        for key, value in self.packetPointers.items():
-            if value:
-                if value.__name__ == type(packet).__name__:
-                    packetId = key
-                    break
-        if packetId == "":
-            return
-        if forClient:
-            header = struct.pack(">ib", len(data) + 5, packetId) + self.crypto.serverIn(data)
-            self.client.send(header)
-        else:
-            header = struct.pack(">ib", len(data) + 5, packetId) + self.crypto.clientIn(data)
-            self.server.send(header)
+        if self.client or self.server:
+            data = bytes(packet.data)
+            for key, value in self.packetPointers.items():
+                if value:
+                    if value.__name__ == type(packet).__name__:
+                        packetId = key
+                        break
+            if forClient:
+                header = struct.pack(">ib", len(data) + 5, packetId) + self.crypto.serverIn(data)
+                self.client.send(header)
+            else:
+                header = struct.pack(">ib", len(data) + 5, packetId) + self.crypto.clientIn(data)
+                self.server.send(header)
 
     def sendToClient(self, packet):
         self.sendPacket(packet, True)
@@ -173,11 +172,11 @@ class Proxy:
                     if not Packet.send:
                         return
                     Packet.write()
+                    if dedata != bytes(Packet.data):
+                        print(packetid, dedata, bytes(Packet.data))
             header = header[:5] + self.crypto.clientIn(dedata)
         else:
             dedata = self.crypto.serverOut(header[5:])
-            if packetid == 62:
-                print(dedata)
             if not self.reloading_plugins:
                 if self.packetPointers.get(packetid):
                     Packet = self.packetPointers.get(packetid)()
@@ -189,6 +188,10 @@ class Proxy:
                     if not Packet.send:
                         return
                     Packet.write()
+                    if packetid == 62:
+                        Packet.data = Packet.data[:int(Packet.index / 2)]
+                    if dedata != bytes(Packet.data):
+                        print(packetid, dedata, bytes(Packet.data))
             header = header[:5] + self.crypto.serverIn(dedata)
         socket = self.server if fromClient else self.client
         socket.send(header)  # Sends data from socket2 to socket1
@@ -238,6 +241,8 @@ class Proxy:
             self.client.close()
             self.server.close()
             self.listener.close()
+        except Exception as e:
+            print(e)
 
         print("Loop successfully exited")
 

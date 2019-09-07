@@ -172,6 +172,26 @@ class Location:
         return math.atan2(dX, dY)
 
 
+class MoveRecord:
+    time = 0
+    x = 0
+    y = 0
+
+    def __init__(self, superclass: Packet.Packet):
+        self.sprcls = superclass
+
+    def read(self):
+        self.time = self.sprcls.read_int32()
+        self.x = self.sprcls.read_float()
+        self.y = self.sprcls.read_float()
+        return self.time, self.x, self.y
+
+    def write(self):
+        self.sprcls.write_int32(self.time)
+        self.sprcls.write_float(self.x)
+        self.sprcls.write_float(self.y)
+
+
 class Status:
     object_id = 0
     position: Location = None
@@ -184,16 +204,17 @@ class Status:
         self.object_id = self.sprcls.read_int32()
         self.position = Location(self.sprcls)
         self.position.read()
-        datalen = self.sprcls.read_int16()
-        for _ in range(datalen):
+        self.data = list(range(self.sprcls.read_int16()))
+        for _ in range(len(self.data)):
             statData = StatData(self.sprcls)
             statData.read()
-            self.data.append(statData)
+            self.data[_] = statData
         return self.object_id, self.position, self.data
 
     def write(self):
         self.sprcls.write_int32(self.object_id)
         self.position.write()
+        self.sprcls.write_int16(len(self.data))
         for status in self.data:
             status.write()
 

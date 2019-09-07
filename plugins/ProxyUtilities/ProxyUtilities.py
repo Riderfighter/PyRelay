@@ -16,17 +16,13 @@ class ProxyUtilities:
         proxy.hookPacket(Packets.CreateSuccessPacket, self.onCreateSuccess)
         proxy.hookPacket(Packets.ReconnectPacket, self.onReconnect)
         proxy.hookPacket(Packets.FailurePacket, self.onFailure)
-        proxy.hookPacket(Packets.UpdatePacket, self.onUpdate)
         proxy.hookCommand("reload", self.reloadPlugins)
-
-    def onUpdate(self, packet: Packets.UpdatePacket):
-        print("Got update!")
 
     def reloadPlugins(self, args):
         threading.Thread(target=self._proxy.loadPlugins).start()
         newPacket = Packets.NotificationPacket()
         newPacket.objectId = self._proxy.playerid
-        newPacket.message = "Plugins hotloaded!"
+        newPacket.message["tokens"]["data"] = "Plugins hotloaded!"
         newPacket.color = 0x8B00FF
         newPacket.write()
         self._proxy.sendToClient(newPacket)
@@ -71,7 +67,7 @@ class ProxyUtilities:
         self._proxy.playerid = packet.objectId
         newPacket = Packets.NotificationPacket()
         newPacket.objectId = self._proxy.playerid
-        newPacket.message = "Welcome to PyRelay!"
+        newPacket.message["tokens"]["data"] = "Welcome to PyRelay!"
         rcolor = lambda: random.randint(0, 255)
         newPacket.color = int('%02X%02X%02X' % (rcolor(), rcolor(), rcolor()), 16)
         newPacket.write()

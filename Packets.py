@@ -293,7 +293,8 @@ class HelloPacket(Packet.Packet):
         self.secret = ''
         self.keyTime = 0
         self.key = []
-        self.MapJSON = 0
+        self.mapjsonlen = 0
+        self.mapjson = ''
         self.entryTag = ''
         self.gameNet = ''
         self.gamenetuserId = ''
@@ -312,13 +313,15 @@ class HelloPacket(Packet.Packet):
         self.write_string(self.secret)
         self.write_int32(self.keyTime)
         self.write_bytestring(self.key)
-        self.write_string(self.MapJSON)
+        self.write_int32(self.mapjsonlen)
+        self.data[self.index:self.advance(self.mapjsonlen)] = self.mapjson
         self.write_string(self.entryTag)
         self.write_string(self.gameNet)
         self.write_string(self.gamenetuserId)
         self.write_string(self.playPlatform)
         self.write_string(self.platformToken)
         self.write_string(self.userToken)
+        self.write_string("XTeP7hERdchV5jrBZEYNebAqDPU6tKU6")
 
     def read(self):
         self.buildVersion = self.read_string()
@@ -330,14 +333,15 @@ class HelloPacket(Packet.Packet):
         self.secret = self.read_string()
         self.keyTime = self.read_int32()
         self.key = self.read_bytestring()
-        self.MapJSON = self.read_string()
+        self.mapjsonlen = self.read_int32()
+        self.mapjson = self.data[self.index:self.advance(self.mapjsonlen)]
         self.entryTag = self.read_string()
         self.gameNet = self.read_string()
         self.gamenetuserId = self.read_string()
         self.playPlatform = self.read_string()
         self.platformToken = self.read_string()
         self.userToken = self.read_string()
-        return self.buildVersion, self.gameId, self.GUID, self.random1, self.password, self.random2, self.secret, self.keyTime, self.key, self.MapJSON, self.entryTag, self.gameNet, self.gamenetuserId, self.playPlatform, self.platformToken, self.userToken
+        return self.buildVersion, self.gameId, self.GUID, self.random1, self.password, self.random2, self.secret, self.keyTime, self.key, self.mapjson, self.entryTag, self.gameNet, self.gamenetuserId, self.playPlatform, self.platformToken, self.userToken
 
 
 class InvDropPacket(Packet.Packet):
@@ -452,24 +456,20 @@ class MovePacket(Packet.Packet):
         self.write_int32(self.tickId)
         self.write_int32(self.time)
         self.new_position.write()
-        length = 0
-        self.write_int16(0)
-        if length == 0:
-            return
+        self.write_int16(len(self.records))
         for record in self.records:
-            self.write_int32(record)
+            record.write()
 
     def read(self):
         self.tickId = self.read_int32()
         self.time = self.read_int32()
         self.new_position = Datatypes.Location(self)
         self.new_position.read()
-        length = self.read_int16()
-        if length == 0:
-            self.records = []
-        else:
-            for _ in range(length):
-                self.records.append(self.read_int32())
+        self.records = list(range(self.read_int16()))
+        for _ in range(len(self.records)):
+            moverec = Datatypes.MoveRecord(self)
+            moverec.read()
+            self.records[_] = moverec
         return self.tickId, self.time, self.new_position, self.records
 
 
@@ -818,16 +818,19 @@ class UpdatePacket(Packet.Packet):
         super(UpdatePacket, self).__init__()
 
     def read(self):
-        for _ in range(self.read_int16()):
+        self.tiles = list(range(self.read_int16()))
+        for _ in range(len(self.tiles)):
             tile = Datatypes.Tile(self)
             tile.read()
-            self.tiles.append(tile)
-        for _ in range(self.read_int16()):
+            self.tiles[_] = tile
+        self.newobjs = list(range(self.read_int16()))
+        for _ in range(len(self.newobjs)):
             entity = Datatypes.Entity(self)
             entity.read()
-            self.newobjs.append(entity)
-        for _ in range(self.read_int16()):
-            self.drops.append(self.read_int32())
+            self.newobjs[_] = entity
+        self.drops = list(range(self.read_int16()))
+        for _ in range(len(self.drops)):
+            self.drops[_] = self.read_int32()
 
     def write(self):
         self.write_int16(len(self.tiles))
@@ -851,6 +854,7 @@ class TextPacket(Packet.Packet):
         self.recipient = ""
         self.text = ""
         self.cleantext = ""
+        self.isSupporter = False
 
     def write(self):
         self.reset()
@@ -861,6 +865,7 @@ class TextPacket(Packet.Packet):
         self.write_string(self.recipient)
         self.write_string(self.text)
         self.write_string(self.cleantext)
+        self.write_boolean(self.isSupporter)
 
     def read(self):
         self.name = self.read_string()
@@ -870,6 +875,7 @@ class TextPacket(Packet.Packet):
         self.recipient = self.read_string()
         self.text = self.read_string()
         self.cleantext = self.read_string()
+        self.isSupporter = self.read_boolean()
         return self.name, self.objectid, self.numstars, self.bubbletime, self.recipient, self.text, self.cleantext
 
 
@@ -883,12 +889,16 @@ class AccountListPacket(Packet.Packet):
     def write(self):
         self.reset()
         self.write_int32(self.accountlistId)
-        self.write_string(self.accountIds)
+        self.write_int16(len(self.accountIds))
+        for x in self.accountIds:
+            self.write_string(x)
         self.write_int32(self.lockAction)
 
     def read(self):
         self.accountlistId = self.read_int32()
-        self.accountIds = self.read_string()
+        self.accountIds = list(range(self.read_int16()))
+        for x in range(len(self.accountIds)):
+            self.accountIds[x] = self.read_string()
         self.lockAction = self.read_int32()
         return self.accountlistId, self.accountIds, self.lockAction
 
@@ -1159,18 +1169,24 @@ class NewTickPacket(Packet.Packet):
         super(NewTickPacket, self).__init__()
         self.tickId = 0
         self.tickTime = 0
-        self.statuses = b''
+        self.statuses = []
 
     def write(self):
         self.reset()
         self.write_int32(self.tickId)
         self.write_int32(self.tickTime)
-        self.write_bytestring(self.statuses)
+        self.write_int16(len(self.statuses))
+        for status in self.statuses:
+            status.write()
 
     def read(self):
         self.tickId = self.read_int32()
         self.tickTime = self.read_int32()
-        self.statuses = self.read_bytestring()
+        self.statuses = list(range(self.read_int16()))
+        for _ in range(len(self.statuses)):
+            status = Datatypes.Status(self)
+            status.read()
+            self.statuses[_] = status
         return self.tickId, self.tickTime, self.statuses
 
 
@@ -1212,13 +1228,13 @@ class NotificationPacket(Packet.Packet):
     def __init__(self):
         super(NotificationPacket, self).__init__()
         self.objectId = 0
-        self.message = ""
+        self.message = {"key": "blank", "tokens": {"data": ""}}
         self.color = 0
 
     def write(self):
         self.reset()
         self.write_int32(self.objectId)
-        self.write_string(json.dumps({'key': 'blank', 'tokens': {'data': self.message}}))
+        self.write_string(json.dumps(self.message, separators=(',', ':')))
         self.write_int32(self.color)
 
     def read(self):
