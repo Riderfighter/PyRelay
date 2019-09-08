@@ -172,6 +172,7 @@ class Proxy:
                     if not Packet.send:
                         return
                     Packet.write()
+                    dedata = Packet.data
                     if dedata != bytes(Packet.data):
                         print(packetid, dedata, bytes(Packet.data))
             header = header[:5] + self.crypto.clientIn(dedata)
@@ -188,8 +189,7 @@ class Proxy:
                     if not Packet.send:
                         return
                     Packet.write()
-                    if packetid == 62:
-                        Packet.data = Packet.data[:int(Packet.index / 2)]
+                    dedata = Packet.data
                     if dedata != bytes(Packet.data):
                         print(packetid, dedata, bytes(Packet.data))
             header = header[:5] + self.crypto.serverIn(dedata)
@@ -225,8 +225,8 @@ class Proxy:
 
     def Route(self):
         # Figure out how to rebind this socket to the reconnect packets ip thing.
-        try:
-            while True:
+        while True:
+            try:
                 if not self.running:
                     break
 
@@ -237,13 +237,12 @@ class Proxy:
                 if self.server in rlist:
                     self.readRemote(False)
 
-        except KeyboardInterrupt:
-            self.client.close()
-            self.server.close()
-            self.listener.close()
-        except Exception as e:
-            print(e)
-
+            except KeyboardInterrupt:
+                self.client.close()
+                self.server.close()
+                self.listener.close()
+            except ConnectionResetError:
+                self.restartProxy()
         print("Loop successfully exited")
 
 

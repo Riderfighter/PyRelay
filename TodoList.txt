@@ -71,8 +71,8 @@ HatchEggPacket !
 InvResultPacket ! 
 InvitedToGuildPacket !
 KeyInfoResponsePacket !
-MapInfoPacket
-NameResultPacket
+MapInfoPacket !
+NameResultPacket !
 NewAbilityUnlockedPacket
 NewTickPacket
 NotificationPacket

@@ -6,6 +6,14 @@ class Glow:
     def __init__(self, proxy: Proxy.Proxy):
         self._proxy = proxy
         self._proxy.hookPacket(Packets.UpdatePacket, self.onUpdate)
+        # self._proxy.hookPacket(Packets.PlayerShootPacket, self.onAllyShoot)
+
+    def onAllyShoot(self, packet: Packets.PlayerShootPacket):
+        if packet.angle < 0:
+            angle = (packet.angle * -1) * 57.296
+        else:
+            angle = 180 + (180 - (packet.angle * 57.296))
+        print(angle)
 
     def onUpdate(self, packet: Packets.UpdatePacket):
         for entity in packet.newobjs:
@@ -13,3 +21,5 @@ class Glow:
                 for statdata in entity.status.data:
                     if statdata.id.m_type == 59:
                         statdata.IntValue = 100
+                    if statdata.id.m_type == 99:
+                        statdata.IntValue = 1

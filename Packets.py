@@ -833,6 +833,7 @@ class UpdatePacket(Packet.Packet):
             self.drops[_] = self.read_int32()
 
     def write(self):
+        self.reset()
         self.write_int16(len(self.tiles))
         for tile in self.tiles:
             tile.write()
@@ -945,7 +946,7 @@ class AoEPacket(Packet.Packet):
         self.write_uint16(self.damage)
         self.write_unsignedbyte(self.effects)
         self.write_float(self.effectDuration)
-        self.write_int16(self.originType)
+        self.write_uint16(self.originType)
         self.write_int32(self.color)
         self.write_boolean(self.armorPierce)
 
