@@ -19,7 +19,5 @@ class Glow:
         for entity in packet.newobjs:
             if entity.status.object_id == self._proxy.playerid:
                 for statdata in entity.status.data:
-                    if statdata.id.m_type == 59:
-                        statdata.IntValue = 100
-                    if statdata.id.m_type == 99:
+                    if statdata.id.m_type == statdata.id.SupporterStat:
                         statdata.IntValue = 1
