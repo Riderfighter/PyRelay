@@ -764,7 +764,7 @@ class UseItemPacket(Packet.Packet):
         self.time = 0
         self.slotObject: Datatypes.SlotObject = None
         self.itemUsePos: Datatypes.Location = None
-        self.useType = ''
+        self.useType = 0
 
     def write(self):
         self.reset()
