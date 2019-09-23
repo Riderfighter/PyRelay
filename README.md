@@ -19,7 +19,7 @@
     - Works on master branch flawlessly but fails in the dev branch.
 - [X] Allow multiple clients to connect to proxy.
     - Sort of works on dev branch not on master though.
-- [ ] Kill the socket connect to server in order to reset the serverside ciphers and not cause 10 minute disconnects.
+- [X] Kill the socket connect to server in order to reset the serverside ciphers and not cause 10 minute disconnects.
     - This is an important thing that needs to be done but I've attempted to no avail.
 - [X] Implement a plugin system.
     - [X] Allow commands to be set via plugins.
