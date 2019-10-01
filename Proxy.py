@@ -172,9 +172,9 @@ class Proxy:
                     if not Packet.send:
                         return
                     Packet.write()
-                    dedata = Packet.data
                     if dedata != bytes(Packet.data):
                         print(packetid, dedata, bytes(Packet.data))
+                    dedata = Packet.data
             header = header[:5] + self.crypto.clientIn(dedata)
         else:
             dedata = self.crypto.serverOut(header[5:])
@@ -189,9 +189,9 @@ class Proxy:
                     if not Packet.send:
                         return
                     Packet.write()
-                    dedata = Packet.data
                     if dedata != bytes(Packet.data):
                         print(packetid, dedata, bytes(Packet.data))
+                    dedata = Packet.data
             header = header[:5] + self.crypto.serverIn(dedata)
         socket = self.server if fromClient else self.client
         socket.send(header)  # Sends data from socket2 to socket1

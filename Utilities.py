@@ -34,11 +34,6 @@ class CryptoUtils:
         cipher = PKCS1_OAEP.new(key)
         return base64.b64encode(cipher.encrypt(data))
 
-    def RSADecrypt(self, data):
-        key = RSA.importKey(self.rsakey)
-        cipher = PKCS1_OAEP.new(key)
-        return cipher.decrypt(base64.b64decode(bytes(data, 'utf8')))
-
     def serverOut(self, data):
         """Decrypt server Packets"""
         return self.ARC4DecryptinCipher.decrypt(data)
