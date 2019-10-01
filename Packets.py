@@ -1,3 +1,4 @@
+import enum
 import json
 
 import Datatypes
@@ -1156,6 +1157,14 @@ class EnemyShootPacket(Packet.Packet):
 
 
 class FailurePacket(Packet.Packet):
+    class failures(enum.IntEnum):
+        portal_error = 0
+        incorrect_version = 4
+        bad_key = 5
+        invalid_teleport_target = 6
+        email_verification_needed = 7
+        teleport_realm_block = 9
+
     def __init__(self):
         super(FailurePacket, self).__init__()
         self.errorId = 0

@@ -30,7 +30,20 @@ class ServerConnect:
             "eun": "54.93.78.148",
             "usw2": "54.215.251.128"
         }
-        proxy.hookCommand("conn", self.connect_to_server)
+        self._proxy.hookCommand("conn", self.connect_to_server)
+        self._proxy.hookPacket(Packets.CreateSuccessPacket, self.onCreateSuccess)
+
+    def onCreateSuccess(self, packet: Packets.CreateSuccessPacket):
+        textpacket = Packets.TextPacket()
+        textpacket.bubbletime = 0
+        textpacket.cleantext = f'Thanks for using ServerConnect, try me out with "/conn usw2"'
+        textpacket.name = "#ServerConnect"
+        textpacket.numstars = -1
+        textpacket.objectid = -1
+        textpacket.recipient = ""
+        textpacket.text = f'Thanks for using ServerConnect, try me out with "/conn usw2"'
+        textpacket.write()
+        self._proxy.sendToClient(textpacket)
 
     def connect_to_server(self, args):
         if args[0] in self.servers:
@@ -53,11 +66,11 @@ class ServerConnect:
         else:
             textpacket = Packets.TextPacket()
             textpacket.bubbletime = 0
-            textpacket.cleantext = f'{args[0]} is not a valid server. Try something else!'
+            textpacket.cleantext = f'"{args[0]}" is not a valid server. Try one of these: {", ".join(self.servers.keys())}!'
             textpacket.name = "#ServerConnect"
             textpacket.numstars = -1
             textpacket.objectid = -1
             textpacket.recipient = ""
-            textpacket.text = f'{args[0]} is not a valid server. Try something else!'
+            textpacket.text = f'"{args[0]}" is not a valid server. Try one of these: {", ".join(self.servers.keys())}!'
             textpacket.write()
             self._proxy.sendToClient(textpacket)
