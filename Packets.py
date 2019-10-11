@@ -1164,7 +1164,7 @@ class EnemyShootPacket(Packet.Packet):
 
 class FailurePacket(Packet.Packet):
     class failures(enum.IntEnum):
-        portal_error = 0
+        connection_error = 0
         incorrect_version = 4
         bad_key = 5
         invalid_teleport_target = 6
