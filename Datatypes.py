@@ -135,7 +135,7 @@ class StatData:
         return self.id, self.StringValue, self.IntValue
 
     def write(self):
-        self.sprcls.write_byte(self.id.value)
+        self.sprcls.write_byte(self.id.id.value)
         if self.isStringData():
             self.sprcls.write_string(self.StringValue)
         else:

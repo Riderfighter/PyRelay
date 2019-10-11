@@ -16,7 +16,7 @@ import Utilities
 class Proxy:
     def __init__(self):
         # Constant variables/classes
-        self.defaultServer = "54.183.179.205"
+        self.defaultServer = "52.23.232.42"
         self.lastServer = self.defaultServer
         self.defaultPort = 2050
         self.lastPort = 2050
@@ -174,7 +174,7 @@ class Proxy:
                     Packet.write()
                     if dedata != bytes(Packet.data):
                         print(packetid, dedata, bytes(Packet.data))
-                    dedata = Packet.data
+                    dedata = bytes(Packet.data)
             header = header[:5] + self.crypto.clientIn(dedata)
         else:
             dedata = self.crypto.serverOut(header[5:])
@@ -191,7 +191,7 @@ class Proxy:
                     Packet.write()
                     if dedata != bytes(Packet.data):
                         print(packetid, dedata, bytes(Packet.data))
-                    dedata = Packet.data
+                    dedata = bytes(Packet.data)
             header = header[:5] + self.crypto.serverIn(dedata)
         socket = self.server if fromClient else self.client
         socket.send(header)  # Sends data from socket2 to socket1
@@ -241,7 +241,8 @@ class Proxy:
                 self.client.close()
                 self.server.close()
                 self.listener.close()
-            except ConnectionResetError:
+            except ConnectionResetError as e:
+                print(e)
                 self.restartProxy()
         print("Loop successfully exited")
 
