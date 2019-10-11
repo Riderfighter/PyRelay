@@ -53,7 +53,7 @@ class StatType:
         ManaBonus = 47
         AttackBonus = 48
         DefenseBonus = 49
-        SpeedBonus = 0
+        SpeedBonus = 50
         VitalityBonus = 51
         WisdomBonus = 52
         DexterityBonus = 53
