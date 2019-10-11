@@ -142,16 +142,19 @@ class CreatePacket(Packet.Packet):
         super(CreatePacket, self).__init__()
         self.classType = 0
         self.skinType = 0
+        self.isChallenger = False
 
     def write(self):
         self.reset()
         self.write_uint16(self.classType)
         self.write_uint16(self.skinType)
+        self.write_boolean(self.isChallenger)
 
     def read(self):
         self.classType = self.read_uint16()
         self.skinType = self.read_uint16()
-        return self.classType, self.skinType
+        self.isChallenger = self.read_boolean()
+        return self.classType, self.skinType, self.isChallenger
 
 
 class EditAccountListPacket(Packet.Packet):
@@ -432,16 +435,19 @@ class LoadPacket(Packet.Packet):
         super(LoadPacket, self).__init__()
         self.characterId = 0
         self.isfromArena = False
+        self.isChallenger = False
 
     def write(self):
         self.reset()
         self.write_int32(self.characterId)
         self.write_boolean(self.isfromArena)
+        self.write_boolean(self.isChallenger)
 
     def read(self):
         self.characterId = self.read_int32()
         self.isfromArena = self.read_boolean()
-        return self.characterId, self.isfromArena
+        self.isChallenger = self.read_boolean()
+        return self.characterId, self.isfromArena, self.isChallenger
 
 
 class MovePacket(Packet.Packet):
