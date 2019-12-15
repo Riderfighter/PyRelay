@@ -1,7 +1,7 @@
 import struct
 
 
-class Packet(object):
+class Packet:
     def __init__(self):
         self.data = bytearray()
         self.index = 0

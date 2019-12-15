@@ -16,10 +16,10 @@ import Utilities
 class Proxy:
     def __init__(self):
         # Constant variables/classes
-        self.defaultServer = "52.23.232.42"
+        self.defaultServer = "52.47.149.74"
         self.lastServer = self.defaultServer
         self.defaultPort = 2050
-        self.lastPort = 2050
+        self.lastPort = self.defaultPort
         self.packetPointers = Utilities.Packetsetup().setup_packet()
         self.crypto = Utilities.CryptoUtils('6a39570cc9de4ec71d64821894', 'c79332b197f92ba85ed281a023')
         self.playerid = 0
@@ -44,9 +44,9 @@ class Proxy:
             self._packetHooks.clear()
             self._commandHooks.clear()
         pluginDIR = "./plugins"
-        possibleplugins = os.listdir(pluginDIR)
+        possibleplugins = list(file for file in os.listdir(pluginDIR) if not file.startswith("."))
         testset = set()
-        for i in [file for file in possibleplugins if not file.startswith(".")]:  # removing all files that start with a "." on mac
+        for i in possibleplugins:  # removing all files that start with a "." on mac
             plugin = importlib.import_module(f"plugins.{i}.{i}")
             testset.add(plugin)
             if plugin not in self.plugins:
@@ -219,7 +219,7 @@ class Proxy:
         self.startUpProxy()
 
     def start(self):
-        threading.Thread(target=self.enableSWFPROXY).start()
+        # threading.Thread(target=self.enableSWFPROXY).start()
         threading.Thread(target=self.enableClients).start()
         self.startUpProxy()
 
@@ -238,9 +238,12 @@ class Proxy:
                     self.readRemote(False)
 
             except KeyboardInterrupt:
-                self.client.close()
-                self.server.close()
-                self.listener.close()
+                try:
+                    self.client.close()
+                    self.server.close()
+                    self.listener.close()
+                except AttributeError as e:
+                    print(e)
             except ConnectionResetError as e:
                 print(e)
                 self.restartProxy()

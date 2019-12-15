@@ -28,9 +28,10 @@ class ProxyUtilities:
         self._proxy.sendToClient(newPacket)
 
     def onFailure(self, packet: Packets.FailurePacket):
-        print(packet.failures(packet.errorId), packet.errorMessage)
+        print(packet.errorId, packet.errorMessage)
 
     def onHello(self, packet: Packets.HelloPacket):
+        print(packet.data)
         if packet.gameId == -2 and self._proxy.lastServer != self._proxy.defaultServer:
             self._proxy.lastServer = self._proxy.defaultServer
             self._proxy.lastPort = self._proxy.defaultPort
@@ -49,8 +50,6 @@ class ProxyUtilities:
         newPacket.isFromArena = packet.isFromArena
         newPacket.key = packet.key
         newPacket.write()
-        # newPacket.write(packet.name, "localhost", packet.stats, 2050, packet.gameId, packet.keyTime, packet.isFromArena,
-        #                 packet.key)
         if packet.host != "":
             self._proxy.lastServer = packet.host
         if packet.port != -1:

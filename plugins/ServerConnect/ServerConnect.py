@@ -31,7 +31,7 @@ class ServerConnect:
             "usw2": "54.215.251.128"
         }
         self._proxy.hookCommand("conn", self.connect_to_server)
-        self._proxy.hookPacket(Packets.CreateSuccessPacket, self.onCreateSuccess)
+        # self._proxy.hookPacket(Packets.CreateSuccessPacket, self.onCreateSuccess)
 
     def onCreateSuccess(self, packet: Packets.CreateSuccessPacket):
         textpacket = Packets.TextPacket()

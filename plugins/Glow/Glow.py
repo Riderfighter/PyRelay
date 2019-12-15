@@ -6,7 +6,7 @@ class Glow:
     def __init__(self, proxy: Proxy.Proxy):
         self._proxy = proxy
         self._proxy.hookPacket(Packets.UpdatePacket, self.onUpdate)
-        # self._proxy.hookPacket(Packets.PlayerShootPacket, self.onAllyShoot)
+        self._proxy.hookPacket(Packets.PlayerShootPacket, self.onAllyShoot)
 
     def onAllyShoot(self, packet: Packets.PlayerShootPacket):
         if packet.angle < 0:
